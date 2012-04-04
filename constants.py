@@ -12,7 +12,7 @@ font_name = pygame.font.match_font("ubuntumono")
 UBUNTUMONO = pygame.font.Font(font_name,18)
 
 # Game Board
-BOARD_SIZE = (40,40)
+BOARD_SIZE = (8,8)
 SQUARE_SIZE = 64
 
 # Colors

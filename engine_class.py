@@ -1,4 +1,4 @@
-import pygame, time
+import pygame
 from constants import *
 
 from graphics_class import Graphics
@@ -14,12 +14,8 @@ class Engine(object):
     
     def run(self):
         graphics.draw_background()
-        start = time.time()
-        graphics.draw_gameboard()
-        print "squares: " + str(time.time() - start)
-        start = time.time()
-        graphics.dg2()
-        print "lines: " + str(time.time() - start)
+        graphics.draw_gameboard(interface.offset)
+        graphics.draw_square_numbers(interface.offset)
         graphics.draw_windows(interface.windows)
-        graphics.update()
+        graphics.update(interface.offset)
         interface.run()
