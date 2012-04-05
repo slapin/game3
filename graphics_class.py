@@ -25,7 +25,7 @@ class Graphics(object):
                 left = x * SQUARE_SIZE + buffer
                 num = str(x) + ", " + str(y)
                 text = ORBITRON.render(num, 1, color)
-                dest = (left, top)
+                dest = (left + off[0], top + off[1])
                 self.display.blit(text, dest)   
                 
 
