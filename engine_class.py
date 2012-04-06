@@ -3,6 +3,7 @@ from constants import *
 
 from graphics_class import Graphics
 from interface_class import Interface
+from unit_class import unitlist
 
 graphics = Graphics()
 interface = Interface()
@@ -14,8 +15,9 @@ class Engine(object):
     
     def run(self):
         graphics.draw_background()
-        graphics.draw_gameboard(interface.offset)
-        graphics.draw_square_numbers(interface.offset)
-        graphics.draw_windows(interface.windows)
-        graphics.update(interface.offset)
+        graphics.draw_gameboard()
+        graphics.draw_units(unitlist)
+        graphics.draw_square_numbers()
+        graphics.draw_windows()
+        graphics.update()
         interface.run()

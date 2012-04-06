@@ -3,6 +3,7 @@ import pygame
 # Display Surface
 DISPLAY_SIZE = (1024,768)
 
+
 # Fonts
 #fontlist = pygame.font.get_fonts()
 #for item in fontlist: print item
@@ -10,10 +11,12 @@ font_name = pygame.font.match_font("orbitron")
 ORBITRON = pygame.font.Font(font_name, 14)
 font_name = pygame.font.match_font("ubuntumono")
 UBUNTUMONO = pygame.font.Font(font_name,18)
+FONT = pygame.font.Font(None, 18)
 
 # Game Board
-BOARD_SIZE = (8,8)
+BOARD_SIZE = (10,10)
 SQUARE_SIZE = 64
+UNIT_SIZE = 32
 
 # Colors
 BROWN = (120, 75, 25)
