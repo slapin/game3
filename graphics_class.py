@@ -10,9 +10,23 @@ from engine_class import data
 class Graphics(object):
     
     def __init__(self):
-        self.display = pygame.display.set_mode(DISPLAY_SIZE)
+        self.display = pygame.display.set_mode(data.display_size)
+        self.offset = [0, 0]
         
-        self.offset = [100,100]
+    def draw(self):
+        self.draw_background()
+        self.draw_gameboard()
+        self.draw_units(unitlist)
+        self.draw_square_numbers()
+        self.draw_selected_square_highlight()
+        if data.focus == "move":
+            rect = data.selected_square.get_rect()
+            rect.topleft = rect.bottomright
+            text = ORBITRON20.render("Moving", 1, WHITE, BLUE)
+            self.display.blit(text, rect)
+        self.draw_windows()
+                
+        self.update()
         
     def draw_background(self):
         self.display.fill(DARK_GREY)
@@ -65,14 +79,13 @@ class Graphics(object):
             rect.top += off[1]
             pygame.draw.rect(self.display, unit.color, rect)
     
-    def draw_windows(self):
+    def draw_windows(self): # draws all windows in windows (list)
         for window in windows:
             if window.visible:
-                surface = pygame.surface.Surface(window.size)
+                surface = pygame.surface.Surface(window.rect.size)
                 surface.fill(window.color)
-                draw_window_contents(surface, window)
-                dest = window.pos
-                self.display.blit(surface, dest)        
+                draw_window_contents(surface, window)  
+                self.display.blit(surface, window.rect)        
         
     def update(self):
         off = data.camera_offset
@@ -82,7 +95,7 @@ class Graphics(object):
     
 def draw_window_contents(surface, window):
     """ goes through the list of strings in window.contents and renders them """
-    left, top = 5, 5
+    left, top = 10, 10
     right = 0
 
     for item in window.contents:
@@ -96,3 +109,6 @@ def draw_window_contents(surface, window):
         destination = (left, top)
         surface.blit(text,destination)
         top += text.get_rect().height + 5
+        
+def center_rect_on_screen(rect):
+    disp_rect = get_display_rect()
