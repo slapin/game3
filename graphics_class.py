@@ -50,11 +50,10 @@ class Graphics(object):
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * SQUARE_SIZE + data.camera_offset[0] + 1
         y = y * SQUARE_SIZE + data.camera_offset[1] + 1
-#        surf = pygame.surface.Surface((SQUARE_SIZE - 1, SQUARE_SIZE - 1))
-#        surf.fill(color)
-#        surf.set_alpha(100)
-#        pygame.draw.rect(surf, color, surf.get_rect())
-        surf = data.image
+        surf = pygame.surface.Surface((SQUARE_SIZE - 1, SQUARE_SIZE - 1))
+        surf.fill(color)
+        surf.set_alpha(100)
+        pygame.draw.rect(surf, color, surf.get_rect())
         self.display.blit(surf, (x,y))
 
 

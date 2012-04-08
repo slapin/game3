@@ -4,10 +4,11 @@ from constants import *
 class Data(object):
     def __init__(self):
         self.draw_square_numbers = True
-        self.debug = True
         self.camera_offset = [0,0]
-        self.image = pygame.image.load("momo.png")
+        self.input_mode = "normal"
         
+    def get_display_rect(self):
+        return pygame.rect.Rect((0, 0), DISPLAY_SIZE)        
         
 data = Data()
 
