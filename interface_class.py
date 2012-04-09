@@ -71,6 +71,8 @@ class Interface(object):
                     
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
+                    if event.key == K_t:
+                        data.astar.find_path(data.selected_square,board.get_square((6,1)))
                     if event.key == K_m:
                         if data.selected_square.unit != None:
                             data.focus = "move"
@@ -220,9 +222,10 @@ class BottomWindow(Window):
                                   "Energy:  " + str(unit.energy),
                                   "Speed:  " + str(unit.speed)
                                   ])
-        if unit == None:
-            self.contents.extend(["Empty square:  " + str(data.selected_square)
-                                  ])
+        self.contents.extend(["Empty square:  " + str(data.selected_square),
+                              "Blocked?: " + str(data.selected_square.blocked)
+                              ])
+        
         
 class Menu(Window):
     def __init__(self, name, rect, color, visible, font):

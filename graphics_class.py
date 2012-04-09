@@ -5,6 +5,7 @@ from constants import *
 from interface_class import windows
 from unit_class import unitlist
 from engine_class import data
+from gameboard import board
 
 
 class Graphics(object):
@@ -16,9 +17,11 @@ class Graphics(object):
     def draw(self):
         self.draw_background()
         self.draw_gameboard()
+        self.draw_blocked_squares()
         self.draw_units(unitlist)
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
+        self.debug_draw_pathfinding_route()
         if data.focus == "move":
             rect = data.selected_square.get_rect()
             rect.topleft = rect.bottomright
@@ -59,6 +62,15 @@ class Graphics(object):
             end = [i * SQUARE_SIZE + off[0], BOARD_SIZE[1] * SQUARE_SIZE + off[1]]
             pygame.draw.line(self.display, color, start, end)
             
+    def draw_blocked_squares(self):
+        for square in board.blocked_squares:
+            rect = square.get_rect()
+            rect.top += 1
+            rect.height -= 1
+            rect.left += 1
+            rect.width -=1
+            pygame.draw.rect(self.display, (80, 100, 120), rect)
+            
     def draw_selected_square_highlight(self):
         color = (180,180,120)
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
@@ -92,6 +104,27 @@ class Graphics(object):
         self.offset[0] += off[0]
         self.offset[1] += off[1]
         pygame.display.update()
+        
+    #### debug draws
+    
+    def debug_draw_pathfinding_route(self):
+        c = 0
+        for square in data.pathfinding_route:
+            surf = pygame.surface.Surface((32,32))
+            surf.set_alpha(127)
+            rect = square.get_rect()
+            rect.topleft = (0,0)
+            pygame.draw.rect(surf, RED, rect)
+            text = UBUNTUMONO18.render(str(c), 0, WHITE)
+            rect = text.get_rect()
+            surf_rect = surf.get_rect()
+            rect.center = surf_rect.center
+            surf.blit(text, rect)
+            dest = square.get_rect()
+            dest.top += 16
+            dest.left += 16
+            self.display.blit(surf, dest)
+            c += 1
     
 def draw_window_contents(surface, window):
     """ goes through the list of strings in window.contents and renders them """

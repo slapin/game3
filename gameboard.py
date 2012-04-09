@@ -6,28 +6,56 @@ class Board(object):
     def __init__(self):
         self.BOARD_SIZE = BOARD_SIZE
         self.grid = []
-        for y in range(BOARD_SIZE[1]):
-            row = []
-            for x in range(BOARD_SIZE[0]):
-                row.append(Square((x,y)))
-            self.grid.append(row)
+        self.blocked_squares = []
+        self.create_grid()
+        self.block_list = [(1,6),(1,5),(1,4),(1,3),(2,3),(3,3),(4,3),(5,3),(5,4),(5,5)]
+        for xy in self.block_list:
+            self.block_square(xy)
+        self.update_blocked_square_list()
             
     def get_square(self, (x,y)):
         if 0 <= x < BOARD_SIZE[0] and 0 <= y < BOARD_SIZE[1]:
             square = self.grid[y][x]
-            return square
-            
+            return square            
     
     def get_rect(self):
         width = BOARD_SIZE[0] * SQUARE_SIZE
         height = BOARD_SIZE[1] * SQUARE_SIZE
         return pygame.rect.Rect(0, 0, width, height)
-                   
+    
+    def create_grid(self):
+        for y in range(BOARD_SIZE[1]):
+            row = []
+            for x in range(BOARD_SIZE[0]):
+                row.append(Square((x,y)))
+            self.grid.append(row)
+    
+    def update_blocked_square_list(self):
+        self.blocked = []
+        for row in self.grid:
+            for square in row:
+                if square.blocked:
+                    self.blocked_squares.append(square)
+                    
+    def get_blocked_squares(self):
+        blocklist = []
+        for row in self.grid:
+            for square in row:
+                if square.blocked:
+                    blocklist.append(square)
+        return blocklist
+    
+    def block_square(self, (x, y)):
+        square = self.get_square((x, y))
+        square.blocked = True
+    
 class Square(object):
     """ map square object """
     def __init__(self, xy):
         self.xy = xy
         self.unit = None
+        self.blocked = False
+        self.path_parent = None
         
     def __str__(self):
         return str(self.xy)
