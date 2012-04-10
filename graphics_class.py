@@ -22,6 +22,7 @@ class Graphics(object):
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
         self.debug_draw_pathfinding_route()
+        self.debug_draw_pathfinding_info()
         if data.focus == "move":
             rect = data.selected_square.get_rect()
             rect.topleft = rect.bottomright
@@ -106,9 +107,34 @@ class Graphics(object):
         pygame.display.update()
         
     #### debug draws
+    def debug_draw_pathfinding_info(self):
+        for row in board.grid:
+            for square in row:
+                if square.path_f:
+                    rect = square.get_rect()
+                    rect.top += 2
+                    rect.left += 2
+                    text = FONT.render("F " + str(square.path_f), 1, YELLOW)
+                    self.display.blit(text, rect)
+                
+                if square.path_g:
+                    rect = square.get_rect()
+                    text = FONT.render("G " + str(square.path_g), 1, AQUA)
+                    t_rect = text.get_rect()
+                    t_rect.top = rect.bottom - t_rect.height
+                    t_rect.left = rect.left + 2
+                    self.display.blit(text, t_rect)
+                    
+                if square.path_h:
+                    rect = square.get_rect()
+                    text = FONT.render("H " + str(square.path_h), 1, PURPLE)
+                    t_rect = text.get_rect()
+                    t_rect.right = rect.right
+                    t_rect.top = rect.top + 2
+                    self.display.blit(text, t_rect)
     
     def debug_draw_pathfinding_route(self):
-        c = 0
+        c = 1
         for square in data.pathfinding_route:
             surf = pygame.surface.Surface((32,32))
             surf.set_alpha(127)

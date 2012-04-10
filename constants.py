@@ -6,6 +6,7 @@ import pygame
 def get_font(fontname, size = 20):
     match = pygame.font.match_font(fontname)
     return pygame.font.Font(match, size)
+
 ORBITRON10   = get_font("orbitron", 10)
 ORBITRON12   = get_font("orbitron", 12)
 ORBITRON20   = get_font("orbitron", 20)
@@ -13,6 +14,7 @@ DEJAVUSANS10 = get_font("dejavusans", 10)
 DEJAVUSANS12 = get_font("dejavusans", 12)
 UBUNTUMONO18 = get_font("ubuntumono", 18)
 
+FONT = DEJAVUSANS12
 # Game Board
         
 BOARD_SIZE = (8,8)

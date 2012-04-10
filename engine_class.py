@@ -18,6 +18,7 @@ from interface_class import Interface
 from unit_class import unitlist
 from gameboard import board
 from pathfinding import astar
+
 data.selected_square = board.get_square((0, 0))
 data.astar = astar
 
@@ -34,5 +35,6 @@ class Engine(object):
     def run(self):
         self.clock.tick(60)
         data.fps = self.clock.get_fps()
+        data.astar.run_pathfinding()
         graphics.draw()
         interface.run()

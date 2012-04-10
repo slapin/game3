@@ -72,7 +72,9 @@ class Interface(object):
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
-                        data.astar.find_path(data.selected_square,board.get_square((6,1)))
+                        data.astar.start_pathfinding(data.selected_square)
+                    if event.key == K_l:
+                        data.astar.take_step = True
                     if event.key == K_m:
                         if data.selected_square.unit != None:
                             data.focus = "move"
@@ -226,7 +228,9 @@ class BottomWindow(Window):
         self.contents.extend(["Empty square:  " + str(data.selected_square),
                               "Blocked?: " + str(data.selected_square.blocked),
                               "path_parent: " + str(data.selected_square.path_parent),
-                              "path_g: " + str(data.selected_square.path_g)                              
+                              "path_g: " + str(data.selected_square.path_g),
+                              "path_h: " + str(data.selected_square.path_h),
+                              "path_f: " + str(data.selected_square.path_f)                              
                               ])
         
         
