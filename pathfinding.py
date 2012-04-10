@@ -14,24 +14,32 @@ class AStar():
         self.closed = board.get_blocked_squares()
         self.route = []
         square = self.start
-        c = 0
+        steps = 0
         while square != self.goal:
             square = self.continue_path(square) 
-            c += 1
+            steps += 1
             if square == self.goal:
                 self.finish_time = time.time() - self.start_time
-                print "GOAL reached, steps: " + str(c) + "  Time: " + str(self.finish_time)
+                print "GOAL reached, steps: " + str(steps) + "  Time: " + str(self.finish_time)
+        backtrack = goal
+        for i in range(steps):
+            self.route.insert(0,backtrack)
+            backtrack = backtrack.path_parent
+            if backtrack == None: break
+            
         data.pathfinding_route = self.route
-        self.finish_pathfinding()
         
     def continue_path(self, this_square):
-        self.route.append(this_square)
         self.closed.append(this_square)
+        if this_square in self.open:
+            self.open.remove(this_square)
         adj_list = self.get_adjacent_squares(this_square)
-        self.open = []
         for adj_square in adj_list:
-            if adj_square not in self.open:
+            if adj_square not in self.open and adj_square not in self.closed:
                 self.open.append(adj_square)
+                adj_square.path_parent = this_square
+            elif adj_square in self.open:
+                pass
         for square in self.open:
             square.path_g = self.get_square_to_square_dist(self.start, square)
         f_list = []
@@ -42,10 +50,10 @@ class AStar():
                 f_list.append([square.path_f, square])
         f_list.sort()
         if len(f_list) < 1:
-            print "f_list is empty, cannot continue."
-            for item in self.route: print item
+            print "ERROR: f_list is empty."
         else:
             next_square = f_list[0][1]
+            print "choosing" + str(next_square) + "  whose parent is: " + str(next_square.path_parent)
             return next_square
         
     def get_adjacent_squares(self, square):
@@ -72,10 +80,5 @@ class AStar():
         while self.path_parent != None:
             score += self.get_square_to_square_dist(square, square.path_parent)
         return score
-        
-    def finish_pathfinding(self):
-        for row in board.grid:
-            for square in row:
-                square.path_parent = None
   
 astar = AStar()

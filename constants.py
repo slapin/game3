@@ -14,6 +14,7 @@ DEJAVUSANS12 = get_font("dejavusans", 12)
 UBUNTUMONO18 = get_font("ubuntumono", 18)
 
 # Game Board
+        
 BOARD_SIZE = (8,8)
 SQUARE_SIZE = 64
 UNIT_SIZE = 32

@@ -71,7 +71,7 @@ class Interface(object):
                     
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
-                    if event.key == K_t:
+                    if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
                         data.astar.find_path(data.selected_square,board.get_square((6,1)))
                     if event.key == K_m:
                         if data.selected_square.unit != None:
@@ -185,29 +185,30 @@ class DebugWindow(Window):
         Window.__init__(self, name, rect, color, visible, font)
         
     def update_contents(self):
-        contents = []
-        visible_windows = []
-        not_visible = []
-        for win in windows:
-            if win.visible:
-                visible_windows.append(win.name)
-            else:
-                not_visible.append(win.name)
-        import constants
-        contents.extend([ ########## DEBUG WINDOW CONTENTS
-                        "Focus:" + data.focus,
-                        "Mouse Pos: " + str(pygame.mouse.get_pos()),
-                        "Dragging Cam: " + str(data.interface.dragging_camera),
-                        "I.Offset: " + str(data.camera_offset),
-                        "Draw square numbers: " + str(data.draw_square_numbers),
-                        "FPS: " + str(int(data.fps)),
-                        "Selected square: " + str(data.selected_square),
-                        "Visible windows: " + str(visible_windows),
-                        "Not Visible: " + str(not_visible),
-                        "debug rect: " + str(self.rect),
-                        "data.graphics.display_size" + str(data.display_size)
-                        ])
-        self.contents = contents
+        if self.visible:
+            contents = []
+            visible_windows = []
+            not_visible = []
+            for win in windows:
+                if win.visible:
+                    visible_windows.append(win.name)
+                else:
+                    not_visible.append(win.name)
+
+            contents.extend([ ########## DEBUG WINDOW CONTENTS
+                            "Focus:" + data.focus,
+                            "Mouse Pos: " + str(pygame.mouse.get_pos()),
+                            "Dragging Cam: " + str(data.interface.dragging_camera),
+                            "I.Offset: " + str(data.camera_offset),
+                            "Draw square numbers: " + str(data.draw_square_numbers),
+                            "FPS: " + str(int(data.fps)),
+                            "Selected square: " + str(data.selected_square),
+                            "Visible windows: " + str(visible_windows),
+                            "Not Visible: " + str(not_visible),
+                            "debug rect: " + str(self.rect),
+                            "data.graphics.display_size" + str(data.display_size)
+                            ])
+            self.contents = contents
         
 class BottomWindow(Window):
     def __init__(self, name, rect, color, visible, font):
@@ -223,7 +224,9 @@ class BottomWindow(Window):
                                   "Speed:  " + str(unit.speed)
                                   ])
         self.contents.extend(["Empty square:  " + str(data.selected_square),
-                              "Blocked?: " + str(data.selected_square.blocked)
+                              "Blocked?: " + str(data.selected_square.blocked),
+                              "path_parent: " + str(data.selected_square.path_parent),
+                              "path_g: " + str(data.selected_square.path_g)                              
                               ])
         
         

@@ -8,7 +8,8 @@ class Board(object):
         self.grid = []
         self.blocked_squares = []
         self.create_grid()
-        self.block_list = [(1,6),(1,5),(1,4),(1,3),(2,3),(3,3),(4,3),(5,3),(5,4),(5,5)]
+        self.block_list = []
+        self.load_map("testmap.map")
         for xy in self.block_list:
             self.block_square(xy)
         self.update_blocked_square_list()
@@ -48,6 +49,20 @@ class Board(object):
     def block_square(self, (x, y)):
         square = self.get_square((x, y))
         square.blocked = True
+        
+    def load_map(self, file):
+        f = open(file)
+        x,y = 0,0
+        for row in f:
+            x = 0
+            for square in row:
+                if square == '#':
+                    self.get_square((x,y)).blocked = True
+                x += 1
+            y += 1
+                    
+        
+        f.close()
     
 class Square(object):
     """ map square object """
@@ -56,6 +71,9 @@ class Square(object):
         self.unit = None
         self.blocked = False
         self.path_parent = None
+        self.path_g = None
+        self.path_h = None
+        self.path_f = None
         
     def __str__(self):
         return str(self.xy)
