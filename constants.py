@@ -7,19 +7,19 @@ def get_font(fontname, size = 20):
     match = pygame.font.match_font(fontname)
     return pygame.font.Font(match, size)
 
-ORBITRON10   = get_font("orbitron", 10)
-ORBITRON12   = get_font("orbitron", 12)
-ORBITRON20   = get_font("orbitron", 20)
-DEJAVUSANS10 = get_font("dejavusans", 10)
-DEJAVUSANS12 = get_font("dejavusans", 12)
-UBUNTUMONO18 = get_font("ubuntumono", 18)
+def ORBITRON(size):
+    return get_font("orbitron", size)
 
-FONT = DEJAVUSANS12
-# Game Board
-        
-BOARD_SIZE = (8,8)
-SQUARE_SIZE = 64
-UNIT_SIZE = 32
+def DEJAVUSANS(size):
+    return get_font("dejavusans", size)
+
+def UBUNTUMONO(size):
+    return get_font("ubuntumono", size)
+
+def UBUNTUCONDENSED(size):
+    return get_font("ubuntucondensed", size)
+
+FONT = DEJAVUSANS(10)
 
 # Colors
 BROWN = (120, 75, 25)

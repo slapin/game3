@@ -1,5 +1,6 @@
 from constants import *
 from gameboard import board
+from engine_class import data
 
 class Unit(object):
     def __init__(self, name="No Name", square = (4,4), color = BLUE):
@@ -11,10 +12,10 @@ class Unit(object):
         self.speed = 4
         
     def get_rect(self):
-        x = self.square[0] * SQUARE_SIZE
-        y = self.square[1] * SQUARE_SIZE
-        square_rect = pygame.rect.Rect(x, y, SQUARE_SIZE, SQUARE_SIZE)
-        unit_rect = pygame.rect.Rect(x, y, UNIT_SIZE, UNIT_SIZE)
+        x = self.square[0] * data.square_size
+        y = self.square[1] * data.square_size
+        square_rect = pygame.rect.Rect(x, y, data.square_size, data.square_size)
+        unit_rect = pygame.rect.Rect(x, y, data.unit_size, data.unit_size)
         unit_rect.center = square_rect.center
         return unit_rect
         

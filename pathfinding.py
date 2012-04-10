@@ -1,16 +1,21 @@
 from engine_class import data
 from gameboard import board
 import time, pygame, copy
+from constants import *
 
 class AStar():
     def __init__(self):
         self.take_step = False
         self.open = []
+        self.draw_final_route = False
+        self.no_possible_path = False
+        self.run = False
     
     def start_pathfinding(self, start, goal=board.get_square((6,1))):
+        self.start_time = time.time()
         data.draw_square_numbers = False
         self.reset_pathfinding()
-        self.take_step = True
+        self.run = True
         data.pathfinding_route = []
         self.start = start
         self.goal = goal
@@ -18,19 +23,29 @@ class AStar():
         self.closed = copy.copy(board.blocked_squares)
         self.step = 0
         self.square = self.start
-        print "start -------- " + str(self.start)
         
     def run_pathfinding(self):
-        if self.take_step and len(self.open) > 0:
+        if self.no_possible_path == True:
+            basicfont = pygame.font.Font(None, 100)
+            text = basicfont.render("NO POSSIBLE PATH", 1, RED)
+            t_rect = text.get_rect()
+            t_rect.center = data.graphics.display.get_rect().center
+            data.graphics.display.blit(text, t_rect)
+            pygame.display.update()
+        if len(self.open) > 0 and self.square != self.goal:
             data.pathfinding_route.append(self.square)
             self.step += 1
-            print "step: " + str(self.step) + "  square: " + str(self.square)
+#            print "step: " + str(self.step) + "  square: " + str(self.square)
             self.square = self.process_node(self.square)
             if self.square == self.goal:
-                print "GOAL REACHED"
+                self.finish_time = time.time() - self.start_time
+                print "GOAL REACHED in " + str(self.finish_time)
+                self.draw_final_route = True
+                self.run = False
             self.take_step = False
-        if self.take_step and len(self.open) < 1:
-            print "open list is empty."
+        if len(self.open) < 1:
+            print "open list is EMPTY"
+            self.run = False
         
         
     def process_node(self,current):
@@ -46,17 +61,20 @@ class AStar():
                     neighbor.path_f = self.get_f_score(neighbor)
                 elif neighbor in self.open:
                     new_g = self.get_g_score(current) + self.get_square_to_square_dist(current, neighbor)
+#                    print "new_g: " + str(new_g)
                     if new_g < neighbor.path_g:
                         neighbor.path_parent = current
                         neighbor.path_g = self.get_g_score(neighbor)
                         neighbor.path_f = self.get_f_score(neighbor)
-                print "candidate: " + str(neighbor) + " F-Score: " + str(neighbor.path_f)
+#                print "candidate: " + str(neighbor) + " F-Score: " + str(neighbor.path_f)
         choice = self.get_lowest_f_score_square()
-        print "Choice: " + str(choice)
-        print "-----------"
+#        print "Choice: " + str(choice)
+#        print "-----------"
         return choice
     
     def reset_pathfinding(self):
+        self.no_possible_path = False
+        self.draw_final_route = False
         self.open = []
         self.closed = []
         self.start = None
@@ -93,8 +111,9 @@ class AStar():
     
     def get_g_score(self, square):
         score = 0
-        if square.path_parent != None:
+        while square.path_parent != None:
             score += self.get_square_to_square_dist(square, square.path_parent)
+            square = square.path_parent
         return score
     
     def get_f_score(self, square):
@@ -106,7 +125,7 @@ class AStar():
             f_list.append([square.path_f, square])
         f_list.sort()
         return f_list[0][1]
-    
+
     def get_route(self):
         route = []
         square = self.goal

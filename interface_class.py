@@ -13,8 +13,8 @@ class Interface(object):
         
         # Windows - This determines the DRAW ORDER in GRAPHICS, FIRST IN - FIRST DRAWN
         self.menu1 = self.create_window(Window, "Menu1", color = DARK_BROWN, visible = False)
-        self.bottom = self.create_window(BottomWindow, "Bottom", color = BLACK, font = ORBITRON20)
-        self.debug_window = self.create_window(DebugWindow, "Debug", font=DEJAVUSANS12, visible = False)
+        self.bottom = self.create_window(BottomWindow, "Bottom", color = BLACK, font = ORBITRON(20))
+        self.debug_window = self.create_window(DebugWindow, "Debug", font=DEJAVUSANS(12), visible = True)
 
         self.resize_windows()
         # End Windows
@@ -53,7 +53,8 @@ class Interface(object):
                 quit_game()
             if event.type == KEYDOWN:               
                 if event.key == K_d:
-                    self.debug_window.visible = toggle_boolvar(self.debug_window.visible)
+                    data.debug = toggle_boolvar(data.debug)
+                    self.debug_window.visible = data.debug
                     
             if data.focus == "move":
                 if event.type == KEYDOWN:
@@ -74,7 +75,11 @@ class Interface(object):
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
                         data.astar.start_pathfinding(data.selected_square)
                     if event.key == K_l:
-                        data.astar.take_step = True
+                        data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
+                    if event.key == K_MINUS:
+                        data.zoom_out()
+                    if event.key == K_EQUALS:
+                        data.zoom_in()
                     if event.key == K_m:
                         if data.selected_square.unit != None:
                             data.focus = "move"
@@ -89,9 +94,9 @@ class Interface(object):
                         xy = list(data.selected_square.xy)
                         if event.key == K_DOWN or event.key == K_UP: xy[1] += inc
                         if event.key == K_RIGHT or event.key == K_LEFT: xy[0] += inc
-                        if 0 <= xy[0] <= (BOARD_SIZE[0] - 1):
-                            if 0 <= xy[1] <= (BOARD_SIZE[1] - 1):
-                                select_square(board.get_square(xy))
+                        if 0 <= xy[0] <= (board.board_size[0] - 1):
+                            if 0 <= xy[1] <= (board.board_size[1] - 1):
+                                data.selected_square = board.get_square(xy)
                                 
                     if event.key == K_c:
                         self.center_on_selected_square()
@@ -101,16 +106,23 @@ class Interface(object):
                         
                     if event.key == K_ESCAPE:
                         quit_game()
+                    
                         
                 #MOUSE
                         
                 if event.type == MOUSEBUTTONDOWN:
                     
                     if event.button == 1:
-                        select_square(get_square_under_mouse())
+                        data.selected_square = get_square_under_mouse()
                         
                     if event.button == 3:
                         self.drag_camera_start()
+                        
+                    if event.button == 4:
+                        data.zoom_in()
+                        
+                    if event.button == 5:
+                        data.zoom_out()
                         
                 if event.type == MOUSEBUTTONUP:
                     
@@ -134,7 +146,7 @@ class Interface(object):
                         data.display_size = (1280,800)
                         self.resize_windows()
                     
-    def create_window(self, window_type, name="No name", rect = None, color=GREY, pos=(100, 100), visible=True, font=ORBITRON12):
+    def create_window(self, window_type, name="No name", rect = None, color=GREY, pos=(100, 100), visible=True, font=ORBITRON(12)):
         win = window_type(name, rect, color, visible, font)
         windows.append(win)
         return win
@@ -199,6 +211,7 @@ class DebugWindow(Window):
 
             contents.extend([ ########## DEBUG WINDOW CONTENTS
                             "Focus:" + data.focus,
+                            "Board Size:" + str(board.board_size),
                             "Mouse Pos: " + str(pygame.mouse.get_pos()),
                             "Dragging Cam: " + str(data.interface.dragging_camera),
                             "I.Offset: " + str(data.camera_offset),
@@ -208,7 +221,10 @@ class DebugWindow(Window):
                             "Visible windows: " + str(visible_windows),
                             "Not Visible: " + str(not_visible),
                             "debug rect: " + str(self.rect),
-                            "data.graphics.display_size" + str(data.display_size)
+                            "data.graphics.display_size" + str(data.display_size),
+                            "data.zoom: " + str(data.zoom) + "%",
+                            "data.square_size: " + str(data.square_size),
+                            "graphics.draw() time: " + str(data.graphics.draw_total_time)[:6]
                             ])
             self.contents = contents
         
@@ -278,9 +294,6 @@ def get_square_under_mouse():
         return data.selected_square
     else:
         return result
-
-def select_square(square):
-    data.selected_square = square
     
 def move_unit_one_square(direction):
     if direction == 'north': mod = (0,-1)

@@ -1,35 +1,22 @@
 from constants import *
-from engine_class import data  
+from engine_class import data
     
 class Board(object):
     """ map board object """
     def __init__(self):
-        self.BOARD_SIZE = BOARD_SIZE
-        self.grid = []
+        self.load_map_file("testmap.map")
         self.blocked_squares = []
-        self.create_grid()
-        self.block_list = []
-        self.load_map("testmap.map")
-        for xy in self.block_list:
-            self.block_square(xy)
         self.update_blocked_square_list()
             
     def get_square(self, (x,y)):
-        if 0 <= x < BOARD_SIZE[0] and 0 <= y < BOARD_SIZE[1]:
+        if 0 <= x < self.board_size[0] and 0 <= y < self.board_size[1]:
             square = self.grid[y][x]
             return square            
     
     def get_rect(self):
-        width = BOARD_SIZE[0] * SQUARE_SIZE
-        height = BOARD_SIZE[1] * SQUARE_SIZE
+        width = self.board_size[0] * data.square_size
+        height = self.board_size[1] * data.square_size
         return pygame.rect.Rect(0, 0, width, height)
-    
-    def create_grid(self):
-        for y in range(BOARD_SIZE[1]):
-            row = []
-            for x in range(BOARD_SIZE[0]):
-                row.append(Square((x,y)))
-            self.grid.append(row)
     
     def update_blocked_square_list(self):
         self.blocked = []
@@ -50,9 +37,24 @@ class Board(object):
         square = self.get_square((x, y))
         square.blocked = True
         
-    def load_map(self, file):
-        f = open(file)
-        x,y = 0,0
+    def load_map_file(self, mapfile):
+        self.grid = []
+        self.blocked_squares = []
+        f = open(mapfile)
+        y = 0
+        for line in f:
+            line = line.strip()
+            row = []
+            x = 0
+            for square in line:
+                row.append(Square((x,y)))
+                x += 1
+            self.grid.append(row)
+            y += 1
+        self.board_size = (x, y)
+
+        y = 0
+        f.seek(0)
         for row in f:
             x = 0
             for square in row:
@@ -60,8 +62,6 @@ class Board(object):
                     self.get_square((x,y)).blocked = True
                 x += 1
             y += 1
-                    
-        
         f.close()
     
 class Square(object):
@@ -82,10 +82,10 @@ class Square(object):
         return self.xy[index]
     
     def get_rect(self):
-        left = self.xy[0] * SQUARE_SIZE + data.camera_offset[0]
-        top = self.xy[1] * SQUARE_SIZE + data.camera_offset[1]
-        width = SQUARE_SIZE
-        height = SQUARE_SIZE
+        left = self.xy[0] * data.square_size + data.camera_offset[0]
+        top = self.xy[1] * data.square_size + data.camera_offset[1]
+        width = data.square_size
+        height = data.square_size
         return pygame.rect.Rect(left, top, width, height)
     
 board = Board()

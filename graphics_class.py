@@ -1,4 +1,4 @@
-import pygame
+import pygame, time
 from pygame.locals import *
 
 from constants import *
@@ -13,73 +13,90 @@ class Graphics(object):
     def __init__(self):
         self.display = pygame.display.set_mode(data.display_size)
         self.offset = [0, 0]
-        
+    
+    def draw_test_images(self):
+        dirt = pygame.image.load("./art/brown_dirt.png").convert()
+        wall = pygame.image.load("./art/grey_wall.png").convert()
+        dirt_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
+        dirt_surf.blit(dirt,(0,0))
+        wall_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
+        wall_surf.blit(wall,(0,0))
+        dirt_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
+        pygame.transform.scale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
+        wall_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
+        pygame.transform.scale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
+        for column in range(board.board_size[0]):
+            for row in range(board.board_size[1]):
+                square = board.get_square((column, row))
+                pixel_x = square.xy[0] * data.square_size + data.camera_offset[0]
+                pixel_y = square.xy[1] * data.square_size + data.camera_offset[1]
+                if square.blocked:
+                    self.display.blit(wall_surf_scaled,(pixel_x, pixel_y))
+                else:
+                    self.display.blit(dirt_surf_scaled,(pixel_x, pixel_y))
+                        
     def draw(self):
+        self.draw_start_time = time.time()
         self.draw_background()
+        self.draw_test_images()
         self.draw_gameboard()
-        self.draw_blocked_squares()
         self.draw_units(unitlist)
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
-        self.debug_draw_pathfinding_route()
-        self.debug_draw_pathfinding_info()
+        if data.debug:
+            self.debug_draw_pathfinding_route()
+            self.debug_draw_pathfinding_info()
+            self.debug_draw_pathfinding_final_route()
         if data.focus == "move":
             rect = data.selected_square.get_rect()
             rect.topleft = rect.bottomright
-            text = ORBITRON20.render("Moving", 1, WHITE, BLUE)
+            text = ORBITRON(20).render("Moving", 1, WHITE, BLUE)
             self.display.blit(text, rect)
         self.draw_windows()
                 
         self.update()
+        self.draw_total_time = time.time() - self.draw_start_time
         
     def draw_background(self):
         self.display.fill(DARK_GREY)
         
     def draw_square_numbers(self):
-        font = ORBITRON10
+        font_size = zoom(14)
         if data.draw_square_numbers:
+            font = DEJAVUSANS(font_size)
             off = data.camera_offset
             color = WHITE
-            offset = 4
-            for y in range(BOARD_SIZE[1]):
-                top = y * SQUARE_SIZE + offset   
-                for x in range(BOARD_SIZE[0]):
-                    left = x * SQUARE_SIZE + offset
+            for y in range(board.board_size[1]):  
+                for x in range(board.board_size[0]):
                     num = str(x) + ", " + str(y)
                     text = font.render(num, 1, color)
-                    dest = (left + off[0], top + off[1])
-                    self.display.blit(text, dest)   
+                    t_rect = text.get_rect()
+                    s_rect = board.get_square((x,y)).get_rect()
+                    t_rect.center = s_rect.center
+                    self.display.blit(text, t_rect)   
                 
 
     def draw_gameboard(self):
-        off = data.camera_offset
-        color = (180, 255, 255)
-        for i in range(BOARD_SIZE[1]+1):
-            start = [off[0],i * SQUARE_SIZE + off[1]]
-            end = [BOARD_SIZE[0] * SQUARE_SIZE + off[0], i * SQUARE_SIZE + off[1]]
-            pygame.draw.line(self.display, color, start, end)
-        for i in range(BOARD_SIZE[0]+1):
-            start = [i * SQUARE_SIZE + off[0], off[1]]
-            end = [i * SQUARE_SIZE + off[0], BOARD_SIZE[1] * SQUARE_SIZE + off[1]]
-            pygame.draw.line(self.display, color, start, end)
-            
-    def draw_blocked_squares(self):
-        for square in board.blocked_squares:
-            rect = square.get_rect()
-            rect.top += 1
-            rect.height -= 1
-            rect.left += 1
-            rect.width -=1
-            pygame.draw.rect(self.display, (80, 100, 120), rect)
+        if data.draw_square_lines:
+            off = data.camera_offset
+            color = (180, 255, 255)
+            for i in range(board.board_size[1]+1):
+                start = [off[0],i * data.square_size + off[1]]
+                end = [board.board_size[0] * data.square_size + off[0], i * data.square_size + off[1]]
+                pygame.draw.line(self.display, color, start, end)
+            for i in range(board.board_size[0]+1):
+                start = [i * data.square_size + off[0], off[1]]
+                end = [i * data.square_size + off[0], board.board_size[1] * data.square_size + off[1]]
+                pygame.draw.line(self.display, color, start, end)
             
     def draw_selected_square_highlight(self):
-        color = (180,180,120)
+        color = (120,240,140)
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
-        x = x * SQUARE_SIZE + data.camera_offset[0] + 1
-        y = y * SQUARE_SIZE + data.camera_offset[1] + 1
-        surf = pygame.surface.Surface((SQUARE_SIZE - 1, SQUARE_SIZE - 1))
+        x = x * data.square_size + data.camera_offset[0] + 1
+        y = y * data.square_size + data.camera_offset[1] + 1
+        surf = pygame.surface.Surface((data.square_size - 1, data.square_size - 1))
         surf.fill(color)
-        surf.set_alpha(100)
+        surf.set_alpha(175)
         pygame.draw.rect(surf, color, surf.get_rect())
         self.display.blit(surf, (x,y))
 
@@ -110,47 +127,67 @@ class Graphics(object):
     def debug_draw_pathfinding_info(self):
         for row in board.grid:
             for square in row:
-                if square.path_f:
-                    rect = square.get_rect()
-                    rect.top += 2
-                    rect.left += 2
-                    text = FONT.render("F " + str(square.path_f), 1, YELLOW)
-                    self.display.blit(text, rect)
-                
-                if square.path_g:
-                    rect = square.get_rect()
-                    text = FONT.render("G " + str(square.path_g), 1, AQUA)
-                    t_rect = text.get_rect()
-                    t_rect.top = rect.bottom - t_rect.height
-                    t_rect.left = rect.left + 2
-                    self.display.blit(text, t_rect)
+                if data.zoom >= 70:
+                    if square.path_f:
+                        rect = square.get_rect()
+                        rect.top += 2
+                        rect.left += 2
+                        text = FONT.render("F " + str(square.path_f), 1, YELLOW)
+                        self.display.blit(text, rect)
                     
-                if square.path_h:
-                    rect = square.get_rect()
-                    text = FONT.render("H " + str(square.path_h), 1, PURPLE)
-                    t_rect = text.get_rect()
-                    t_rect.right = rect.right
-                    t_rect.top = rect.top + 2
-                    self.display.blit(text, t_rect)
+                    if square.path_g:
+                        rect = square.get_rect()
+                        text = FONT.render("G " + str(square.path_g), 1, AQUA)
+                        t_rect = text.get_rect()
+                        t_rect.top = rect.bottom - t_rect.height
+                        t_rect.left = rect.left + 2
+                        self.display.blit(text, t_rect)
+                        
+                    if square.path_h:
+                        rect = square.get_rect()
+                        text = FONT.render("H " + str(square.path_h), 1, PURPLE)
+                        t_rect = text.get_rect()
+                        t_rect.right = rect.right
+                        t_rect.top = rect.top + 2
+                        self.display.blit(text, t_rect)
     
     def debug_draw_pathfinding_route(self):
         c = 1
+        size = zoom(32)
+        gap = zoom(16)
+        font_size = zoom(18)
         for square in data.pathfinding_route:
-            surf = pygame.surface.Surface((32,32))
+            surf = pygame.surface.Surface((size,size))
             surf.set_alpha(127)
             rect = square.get_rect()
             rect.topleft = (0,0)
             pygame.draw.rect(surf, RED, rect)
-            text = UBUNTUMONO18.render(str(c), 0, WHITE)
+            text = UBUNTUMONO(font_size).render(str(c), 0, WHITE)
             rect = text.get_rect()
             surf_rect = surf.get_rect()
             rect.center = surf_rect.center
             surf.blit(text, rect)
             dest = square.get_rect()
-            dest.top += 16
-            dest.left += 16
+            dest.top += gap
+            dest.left += gap
             self.display.blit(surf, dest)
             c += 1
+            
+    def debug_draw_pathfinding_final_route(self):
+        if data.astar.draw_final_route:
+            square = data.astar.goal
+            base = zoom(32)
+            border = zoom(4)
+            size = base + border
+            while square:
+                s_rect = square.get_rect()
+                rect = pygame.rect.Rect(0,0,0,0)
+                rect.height = size
+                rect.width = size
+                rect.center = s_rect.center
+                
+                pygame.draw.rect(self.display, GREEN, rect, border)
+                square = square.path_parent
     
 def draw_window_contents(surface, window):
     """ goes through the list of strings in window.contents and renders them """
@@ -171,3 +208,6 @@ def draw_window_contents(surface, window):
         
 def center_rect_on_screen(rect):
     disp_rect = get_display_rect()
+    
+def zoom(number):
+    return (number * data.zoom) / 100

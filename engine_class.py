@@ -1,15 +1,38 @@
 import pygame
+import constants
 from constants import *
+
+ZOOM_FACTOR = 8
 
 class Data(object):
     def __init__(self):
-        self.draw_square_numbers = True
+        self.draw_square_lines = False
+        self.draw_square_numbers = False
         self.focus = "normal"
-        self.display_size = (1024, 768)
+        self.display_size = (1280, 800)
+        self.base_square_size = 64
+        self.square_size = 64
+        self.base_unit_size = 32
+        self.unit_size = 32
+        self.zoom = 100
         self.pathfinding_route = []
+        self.debug = True
         
     def get_display_rect(self):
-        return pygame.rect.Rect((0, 0), self.display_size) 
+        return pygame.rect.Rect((0, 0), self.display_size)
+    
+    def zoom_out(self):
+        if self.square_size >= 18:
+            self.square_size -= 2
+            self.unit_size -= 1
+        self.zoom = (self.square_size * 100) / (self.base_square_size)
+    
+    def zoom_in(self):
+        if self.square_size < 256:
+            self.square_size += 2
+            self.unit_size += 1
+        self.zoom = (self.square_size * 100) / (self.base_square_size)
+        
 
 data = Data()
 
@@ -33,8 +56,9 @@ class Engine(object):
         self.clock = pygame.time.Clock()
     
     def run(self):
-        self.clock.tick(60)
+        self.clock.tick()
         data.fps = self.clock.get_fps()
-        data.astar.run_pathfinding()
+        if data.astar.run:
+            data.astar.run_pathfinding()
         graphics.draw()
         interface.run()
