@@ -88,4 +88,10 @@ class Square(object):
         height = data.square_size
         return pygame.rect.Rect(left, top, width, height)
     
+    def get_distance_to_square(self, square):
+        x1, y1 = self.xy
+        x2, y2 = square.xy
+        dist = abs(x1 - x2) + abs(y1 - y2)
+        return dist
+    
 board = Board()

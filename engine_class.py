@@ -38,9 +38,9 @@ data = Data()
 
 from graphics_class import Graphics
 from interface_class import Interface
-from unit_class import unitlist
 from gameboard import board
 from pathfinding import astar
+from unit_class import unitlist
 
 data.selected_square = board.get_square((0, 0))
 data.astar = astar
@@ -49,6 +49,10 @@ graphics = Graphics()
 interface = Interface()
 data.interface = interface
 data.graphics = graphics
+
+# Quick access to some debug variables, cut this out later
+interface.debug_window.visible = False
+data.debug = False
 
 class Engine(object):
     
@@ -62,3 +66,7 @@ class Engine(object):
             data.astar.run_pathfinding()
         graphics.draw()
         interface.run()
+        for unit in unitlist:
+            if unit.move_dest != None:
+                unit.update()
+

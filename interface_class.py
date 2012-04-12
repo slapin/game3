@@ -73,7 +73,7 @@ class Interface(object):
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
-                        data.astar.start_pathfinding(data.selected_square)
+                        print data.selected_square.unit.get_rect()
                     if event.key == K_l:
                         data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
                     if event.key == K_MINUS:
@@ -114,9 +114,13 @@ class Interface(object):
                     
                     if event.button == 1:
                         data.selected_square = get_square_under_mouse()
-                        
+                    
+                    if event.button == 2:
+                        if data.selected_square.unit != None:
+                            data.astar.start_pathfinding(data.selected_square, get_square_under_mouse())
                     if event.button == 3:
                         self.drag_camera_start()
+                        
                         
                     if event.button == 4:
                         data.zoom_in()
@@ -220,7 +224,6 @@ class DebugWindow(Window):
                             "Selected square: " + str(data.selected_square),
                             "Visible windows: " + str(visible_windows),
                             "Not Visible: " + str(not_visible),
-                            "debug rect: " + str(self.rect),
                             "data.graphics.display_size" + str(data.display_size),
                             "data.zoom: " + str(data.zoom) + "%",
                             "data.square_size: " + str(data.square_size),
@@ -239,15 +242,12 @@ class BottomWindow(Window):
             self.contents.extend(["Unit name:  " + unit.name,
                                   "Health:  " + str(unit.health),
                                   "Energy:  " + str(unit.energy),
-                                  "Speed:  " + str(unit.speed)
+                                  "AP:  " + str(unit.ap) + "/" + str(unit.max_ap)
                                   ])
-        self.contents.extend(["Empty square:  " + str(data.selected_square),
-                              "Blocked?: " + str(data.selected_square.blocked),
-                              "path_parent: " + str(data.selected_square.path_parent),
-                              "path_g: " + str(data.selected_square.path_g),
-                              "path_h: " + str(data.selected_square.path_h),
-                              "path_f: " + str(data.selected_square.path_f)                              
+        self.contents.extend(["Square:  " + str(data.selected_square),
+                              "Blocked?: " + str(data.selected_square.blocked)                          
                               ])
+        
         
         
 class Menu(Window):

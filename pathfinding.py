@@ -32,21 +32,21 @@ class AStar():
             t_rect.center = data.graphics.display.get_rect().center
             data.graphics.display.blit(text, t_rect)
             pygame.display.update()
-        if len(self.open) > 0 and self.square != self.goal:
-            data.pathfinding_route.append(self.square)
+        while len(self.open) > 0 and self.square != self.goal:
             self.step += 1
 #            print "step: " + str(self.step) + "  square: " + str(self.square)
             self.square = self.process_node(self.square)
             if self.square == self.goal:
+                data.pathfinding_route = self.get_final_route()
                 self.finish_time = time.time() - self.start_time
-                print "GOAL REACHED in " + str(self.finish_time)
+#                print "GOAL REACHED in " + str(self.finish_time)
                 self.draw_final_route = True
                 self.run = False
+                data.selected_square.unit.move_to_target()
             self.take_step = False
         if len(self.open) < 1:
             print "open list is EMPTY"
-            self.run = False
-        
+            self.run = False        
         
     def process_node(self,current):
         self.open.remove(current)
@@ -80,12 +80,21 @@ class AStar():
         self.start = None
         self.goal = None
         self.step = 0
+        data.pathfinding_route = None
         for row in board.grid:
             for square in row:
                 square.path_h = None
                 square.path_f = None
                 square.path_g = None
                 square.path_parent = None
+                
+    def get_final_route(self):
+        route = []
+        square = self.goal
+        while square:
+            route.insert(0, square)
+            square = square.path_parent
+        return route
         
     def get_adjacent_squares(self, square):
         x,y = square.xy

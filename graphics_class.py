@@ -40,7 +40,7 @@ class Graphics(object):
         self.draw_background()
         self.draw_test_images()
         self.draw_gameboard()
-        self.draw_units(unitlist)
+        self.draw_units()
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
         if data.debug:
@@ -94,14 +94,17 @@ class Graphics(object):
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * data.square_size + data.camera_offset[0] + 1
         y = y * data.square_size + data.camera_offset[1] + 1
+        if data.selected_square.unit != None:
+            if data.selected_square.unit.move_dest != None:
+                x += data.selected_square.unit.move_offset[0]
+                y += data.selected_square.unit.move_offset[1]
         surf = pygame.surface.Surface((data.square_size - 1, data.square_size - 1))
         surf.fill(color)
         surf.set_alpha(175)
         pygame.draw.rect(surf, color, surf.get_rect())
         self.display.blit(surf, (x,y))
 
-
-    def draw_units(self, unitlist):
+    def draw_units(self):
         off = data.camera_offset
         for unit in unitlist:
             rect = unit.get_rect()
