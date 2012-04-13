@@ -1,6 +1,7 @@
 from constants import *
 from gameboard import board
 from engine_class import data
+from clothes import *
 
 class Unit(object):
     def __init__(self, name="No Name", square = (4,4), color = BLUE):
@@ -18,6 +19,11 @@ class Unit(object):
         self.moving = False
         self.move_route = []
         self.move_index = 0
+        self.other_clothes = [ROBE_1, ROBE_2, ROBE_3, ROBE_4, ROBE_5, ROBE_6, ROBE_7,
+                               ROBE_8, ROBE_9, ROBE_10, ROBE_11, ROBE_12, ROBE_13, ROBE_14,
+                                ROBE_15, ROBE_16, ROBE_17, ROBE_18
+                              ]
+        self.clothes = [ROBE_1]
         
     def get_rect(self):
         x = self.square[0] * data.square_size
@@ -30,13 +36,13 @@ class Unit(object):
         return unit_rect
     
     def update(self):
-        MOVESPEED = 4
+        MOVESPEED = 2
         if self.step < data.square_size:
             self.move_offset[0] = self.step * self.move_direction[0]
             self.move_offset[1] = self.step * self.move_direction[1]
             self.step += MOVESPEED
             if self.step >= data.square_size:
-                print self.name + " moved to " + str(self.move_dest) + " from " + str(self.square) 
+#                print self.name + " moved to " + str(self.move_dest) + " from " + str(self.square) 
                 self.square.unit = None
                 self.square = self.move_dest
                 self.square.unit = self
@@ -72,13 +78,22 @@ class Unit(object):
             print "Destination already has a unit in it"
         elif dest.blocked:
             print "Square is blocked"
-        else:
+        elif self.ap >= dest.ap_cost:
+            self.ap -= dest.ap_cost
             self.moving = True
             self.move_dest = dest
             x = dest.xy[0] - self.square.xy[0]
             y = dest.xy[1] - self.square.xy[1]
             self.move_direction = (x,y)
             self.step = 0
+        else:
+            print "not enough AP"
+            self.move_route = []
+            self.move_index = 0
+            self.moving = False
+            
+    def new_turn(self):
+        self.ap = self.max_ap
         
 def create_unit(name="No Name", square = (0,0), color = WHITE):
     unit = Unit(name, square, color)

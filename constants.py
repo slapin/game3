@@ -21,6 +21,12 @@ def UBUNTUCONDENSED(size):
 
 FONT = DEJAVUSANS(10)
 
+#for graphics alpha color
+DC_ALPHA = (71, 108, 108)
+
+# CLICK AND DRAG CAMERA MOUSE BUTTON
+DRAGBUTTON = 2
+
 # Colors
 BROWN = (120, 75, 25)
 AQUA = (0, 255, 255)

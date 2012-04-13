@@ -3,7 +3,7 @@ from engine_class import data
 from gameboard import board
 from pygame.locals import *
 import sys
-
+from unit_class import unitlist
 
 windows = []
 
@@ -73,7 +73,7 @@ class Interface(object):
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
-                        print data.selected_square.unit.get_rect()
+                        data.new_turn()
                     if event.key == K_l:
                         data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
                     if event.key == K_MINUS:
@@ -88,6 +88,16 @@ class Interface(object):
                         data.focus = "menu1"
                         self.menu1.visible = True
                         
+                    if event.key == K_F2:
+                        unit = unitlist[1]
+                        ind = unit.other_clothes.index(unit.clothes[0])
+                        if ind >= len(unit.other_clothes) - 1:
+                            ind = 0
+                        else:
+                            ind += 1
+                        unit.clothes = [unit.other_clothes[ind]]
+                        print ind
+                        
                     if event.key == K_DOWN or event.key == K_UP or event.key == K_RIGHT or event.key == K_LEFT: # move data.selected_square with arrow keys
                         if event.key == K_DOWN or event.key == K_RIGHT: inc = 1
                         if event.key == K_UP or event.key == K_LEFT: inc = -1
@@ -101,7 +111,7 @@ class Interface(object):
                     if event.key == K_c:
                         self.center_on_selected_square()
                         
-                    if event.key == K_F2:
+                    if event.key == K_F3:
                         data.draw_square_numbers = toggle_boolvar(data.draw_square_numbers)
                         
                     if event.key == K_ESCAPE:
@@ -115,10 +125,10 @@ class Interface(object):
                     if event.button == 1:
                         data.selected_square = get_square_under_mouse()
                     
-                    if event.button == 2:
+                    if event.button == 3:
                         if data.selected_square.unit != None:
                             data.astar.start_pathfinding(data.selected_square, get_square_under_mouse())
-                    if event.button == 3:
+                    if event.button == DRAGBUTTON:
                         self.drag_camera_start()
                         
                         
@@ -130,7 +140,7 @@ class Interface(object):
                         
                 if event.type == MOUSEBUTTONUP:
                     
-                    if event.button == 3:
+                    if event.button == DRAGBUTTON:
                         self.drag_camera_end()
                         
             elif data.focus == "menu1":

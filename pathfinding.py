@@ -12,17 +12,21 @@ class AStar():
         self.run = False
     
     def start_pathfinding(self, start, goal=board.get_square((6,1))):
-        self.start_time = time.time()
-        data.draw_square_numbers = False
-        self.reset_pathfinding()
-        self.run = True
-        data.pathfinding_route = []
-        self.start = start
-        self.goal = goal
-        self.open = [start]
-        self.closed = copy.copy(board.blocked_squares)
-        self.step = 0
-        self.square = self.start
+        if goal:
+            if goal.blocked:
+                print "square is blocked."
+            else:
+                self.start_time = time.time()
+                data.draw_square_numbers = False
+                self.reset_pathfinding()
+                self.run = True
+                data.pathfinding_route = []
+                self.start = start
+                self.goal = goal
+                self.open = [start]
+                self.closed = copy.copy(board.blocked_squares)
+                self.step = 0
+                self.square = self.start
         
     def run_pathfinding(self):
         if self.no_possible_path == True:

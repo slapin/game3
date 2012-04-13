@@ -1,4 +1,4 @@
-import pygame, time
+import pygame, time, os
 from pygame.locals import *
 
 from constants import *
@@ -7,38 +7,19 @@ from unit_class import unitlist
 from engine_class import data
 from gameboard import board
 
-
 class Graphics(object):
     
     def __init__(self):
         self.display = pygame.display.set_mode(data.display_size)
         self.offset = [0, 0]
-    
-    def draw_test_images(self):
-        dirt = pygame.image.load("./art/brown_dirt.png").convert()
-        wall = pygame.image.load("./art/grey_wall.png").convert()
-        dirt_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
-        dirt_surf.blit(dirt,(0,0))
-        wall_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
-        wall_surf.blit(wall,(0,0))
-        dirt_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.scale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
-        wall_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.scale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
-        for column in range(board.board_size[0]):
-            for row in range(board.board_size[1]):
-                square = board.get_square((column, row))
-                pixel_x = square.xy[0] * data.square_size + data.camera_offset[0]
-                pixel_y = square.xy[1] * data.square_size + data.camera_offset[1]
-                if square.blocked:
-                    self.display.blit(wall_surf_scaled,(pixel_x, pixel_y))
-                else:
-                    self.display.blit(dirt_surf_scaled,(pixel_x, pixel_y))
+        self.DIRTFLOOR = pygame.image.load(os.path.join("./art/brown_dirt.png")).convert()
+        self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
+        self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
                         
     def draw(self):
         self.draw_start_time = time.time()
         self.draw_background()
-        self.draw_test_images()
+        self.draw_square_images()
         self.draw_gameboard()
         self.draw_units()
         self.draw_square_numbers()
@@ -59,6 +40,25 @@ class Graphics(object):
         
     def draw_background(self):
         self.display.fill(DARK_GREY)
+        
+    def draw_square_images(self):
+        dirt_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
+        dirt_surf.blit(self.DIRTFLOOR,(0,0))
+        wall_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
+        wall_surf.blit(self.STONEWALL,(0,0))
+        dirt_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
+        pygame.transform.scale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
+        wall_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
+        pygame.transform.scale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
+        for column in range(board.board_size[0]):
+            for row in range(board.board_size[1]):
+                square = board.get_square((column, row))
+                pixel_x = square.xy[0] * data.square_size + data.camera_offset[0]
+                pixel_y = square.xy[1] * data.square_size + data.camera_offset[1]
+                if square.blocked:
+                    self.display.blit(wall_surf_scaled,(pixel_x, pixel_y))
+                else:
+                    self.display.blit(dirt_surf_scaled,(pixel_x, pixel_y))
         
     def draw_square_numbers(self):
         font_size = zoom(14)
@@ -90,7 +90,7 @@ class Graphics(object):
                 pygame.draw.line(self.display, color, start, end)
             
     def draw_selected_square_highlight(self):
-        color = (120,240,140)
+        color = (120,240,190)
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * data.square_size + data.camera_offset[0] + 1
         y = y * data.square_size + data.camera_offset[1] + 1
@@ -100,17 +100,37 @@ class Graphics(object):
                 y += data.selected_square.unit.move_offset[1]
         surf = pygame.surface.Surface((data.square_size - 1, data.square_size - 1))
         surf.fill(color)
-        surf.set_alpha(175)
+        surf.set_alpha(100)
         pygame.draw.rect(surf, color, surf.get_rect())
         self.display.blit(surf, (x,y))
 
     def draw_units(self):
+        UNITSCALE = 2
         off = data.camera_offset
         for unit in unitlist:
             rect = unit.get_rect()
             rect.left += off[0]
             rect.top += off[1]
-            pygame.draw.rect(self.display, unit.color, rect)
+            surf = pygame.surface.Surface((data.base_unit_size, data.base_unit_size))
+            surf.blit(self.HUMAN, (-32, 0))
+            scaled_surf = pygame.surface.Surface((data.unit_size * UNITSCALE, data.unit_size * UNITSCALE))
+            pygame.transform.scale(surf, (data.unit_size * UNITSCALE, data.unit_size * UNITSCALE), scaled_surf)
+            new_rect = scaled_surf.get_rect()
+            rect.height = new_rect.height
+            rect.width = new_rect.width
+            rect.center = unit.square.get_rect().center
+            scaled_surf.set_colorkey(DC_ALPHA)
+            self.display.blit(scaled_surf, rect)
+            for item in unit.clothes:
+                c_surf = pygame.surface.Surface((16, 32))
+                c_surf.blit(self.HUMAN, item[0])
+                c_surf_scaled = pygame.surface.Surface((zoom(16 * UNITSCALE),zoom(32 * UNITSCALE)))
+                pygame.transform.scale(c_surf, (zoom(16 * UNITSCALE), zoom(32 * UNITSCALE)), c_surf_scaled)
+                c_surf_scaled.set_colorkey(DC_ALPHA)
+                rect.left += zoom(item[1][0])
+                rect.top += zoom(item[1][1])
+                self.display.blit(c_surf_scaled, rect)
+            
     
     def draw_windows(self): # draws all windows in windows (list)
         for window in windows:
@@ -155,6 +175,7 @@ class Graphics(object):
                         self.display.blit(text, t_rect)
     
     def debug_draw_pathfinding_route(self):
+        # This is broken at the moment. I broke it when rebuilding the path to be usable for movement.
         c = 1
         size = zoom(32)
         gap = zoom(16)

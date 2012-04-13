@@ -33,6 +33,10 @@ class Data(object):
             self.unit_size += 1
         self.zoom = (self.square_size * 100) / (self.base_square_size)
         
+    def new_turn(self):
+        for unit in unitlist:
+            unit.new_turn()
+        
 
 data = Data()
 
