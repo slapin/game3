@@ -9,7 +9,7 @@ class Data(object):
         self.draw_square_lines = False
         self.draw_square_numbers = False
         self.focus = "normal"
-        self.display_size = (1280, 800)
+        self.display_size = (1024, 768)
         self.base_square_size = 64
         self.square_size = 64
         self.base_unit_size = 32

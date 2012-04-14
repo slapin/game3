@@ -225,12 +225,12 @@ def draw_window_contents(surface, window):
         if text.get_rect().right > right:
             right = text.get_rect().right
         if text.get_rect().bottom + top > surface.get_rect().bottom:
-            left += right + 5
-            top = 5
+            left += (right + 70)
+            top = 10
             right = 0
         destination = (left, top)
         surface.blit(text,destination)
-        top += text.get_rect().height + 5
+        top += text.get_rect().height + 10
         
 def center_rect_on_screen(rect):
     disp_rect = get_display_rect()

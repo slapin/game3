@@ -251,14 +251,18 @@ class BottomWindow(Window):
         self.contents = []
         unit = data.selected_square.unit
         if unit != None:  # BOTTOM WINDOW CONTENTS
-            self.contents.extend(["Unit name:  " + unit.name,
+            self.contents.extend([unit.name,
                                   "Health:  " + str(unit.stats['health']),
                                   "Energy:  " + str(unit.stats['energy']),
-                                  "AP:  " + str(unit.stats['ap']) + "/" + str(unit.stats['max ap'])
+                                  "AP:  " + str(unit.stats['ap']) + "/" + str(unit.stats['max ap']),
+                                  "","",
+                                  "Strength: " + str(unit.stats['str']),
+                                  "Agility: " + str(unit.stats['agi']),
+                                  "Intellect: " + str(unit.stats['int']),
+                                  "","","",
+                                  "Armor: " + str(unit.stats['armor']),
+                                  "M.Resist: " + str(unit.stats['resist'])
                                   ])
-        self.contents.extend(["Square:  " + str(data.selected_square),
-                              "Blocked?: " + str(data.selected_square.blocked)                          
-                              ])
         
         
         

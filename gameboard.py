@@ -82,7 +82,7 @@ class Square(object):
         self.path_g = None
         self.path_h = None
         self.path_f = None
-        self.ap_cost = 10
+        self.ap_cost = 1
         
     def __str__(self):
         return str(self.xy)

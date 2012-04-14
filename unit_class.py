@@ -113,7 +113,7 @@ def create_random_unit():
     t = ["str", "agi", "int"]
     for item in t:
         stats[item] = random.randint(min, max)
-    max_ap = 1000
+    max_ap = 10
     stats["max ap"] = max_ap
     stats["ap"] = max_ap
     stats["health"] = 30
@@ -121,6 +121,7 @@ def create_random_unit():
     stats["armor"] = 1
     stats["deflect"] = 10
     stats["resist"] = 0
+    stats["status"] = []
     create_unit(name, square, stats)
 
 unitlist = []
