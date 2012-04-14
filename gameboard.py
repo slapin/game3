@@ -33,6 +33,14 @@ class Board(object):
                     blocklist.append(square)
         return blocklist
     
+    def get_unblocked_squares(self):
+        unblocked = []
+        for row in self.grid:
+            for square in row:
+                if square.blocked == False:
+                    unblocked.append(square)
+        return unblocked
+    
     def block_square(self, (x, y)):
         square = self.get_square((x, y))
         square.blocked = True

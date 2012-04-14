@@ -90,7 +90,7 @@ class Graphics(object):
                 pygame.draw.line(self.display, color, start, end)
             
     def draw_selected_square_highlight(self):
-        color = (120,240,190)
+        color = (120,160,190)
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * data.square_size + data.camera_offset[0] + 1
         y = y * data.square_size + data.camera_offset[1] + 1
@@ -100,7 +100,7 @@ class Graphics(object):
                 y += data.selected_square.unit.move_offset[1]
         surf = pygame.surface.Surface((data.square_size - 1, data.square_size - 1))
         surf.fill(color)
-        surf.set_alpha(100)
+        surf.set_alpha(90)
         pygame.draw.rect(surf, color, surf.get_rect())
         self.display.blit(surf, (x,y))
 
@@ -119,6 +119,8 @@ class Graphics(object):
             rect.height = new_rect.height
             rect.width = new_rect.width
             rect.center = unit.square.get_rect().center
+            rect.left += unit.move_offset[0]
+            rect.top += unit.move_offset[1]
             scaled_surf.set_colorkey(DC_ALPHA)
             self.display.blit(scaled_surf, rect)
             for item in unit.clothes:

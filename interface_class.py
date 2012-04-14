@@ -4,6 +4,7 @@ from gameboard import board
 from pygame.locals import *
 import sys
 from unit_class import unitlist
+import unit_class
 
 windows = []
 
@@ -73,7 +74,7 @@ class Interface(object):
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
-                        data.new_turn()
+                        unit_class.create_random_unit()
                     if event.key == K_l:
                         data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
                     if event.key == K_MINUS:
@@ -89,14 +90,15 @@ class Interface(object):
                         self.menu1.visible = True
                         
                     if event.key == K_F2:
-                        unit = unitlist[1]
-                        ind = unit.other_clothes.index(unit.clothes[0])
-                        if ind >= len(unit.other_clothes) - 1:
-                            ind = 0
-                        else:
-                            ind += 1
-                        unit.clothes = [unit.other_clothes[ind]]
-                        print ind
+                        unit = data.selected_square.unit
+                        if unit:
+                            ind = unit.other_clothes.index(unit.clothes[0])
+                            if ind >= len(unit.other_clothes) - 1:
+                                ind = 0
+                            else:
+                                ind += 1
+                            unit.clothes = [unit.other_clothes[ind]]
+                            print ind
                         
                     if event.key == K_DOWN or event.key == K_UP or event.key == K_RIGHT or event.key == K_LEFT: # move data.selected_square with arrow keys
                         if event.key == K_DOWN or event.key == K_RIGHT: inc = 1
@@ -250,9 +252,9 @@ class BottomWindow(Window):
         unit = data.selected_square.unit
         if unit != None:  # BOTTOM WINDOW CONTENTS
             self.contents.extend(["Unit name:  " + unit.name,
-                                  "Health:  " + str(unit.health),
-                                  "Energy:  " + str(unit.energy),
-                                  "AP:  " + str(unit.ap) + "/" + str(unit.max_ap)
+                                  "Health:  " + str(unit.stats['health']),
+                                  "Energy:  " + str(unit.stats['energy']),
+                                  "AP:  " + str(unit.stats['ap']) + "/" + str(unit.stats['max ap'])
                                   ])
         self.contents.extend(["Square:  " + str(data.selected_square),
                               "Blocked?: " + str(data.selected_square.blocked)                          
