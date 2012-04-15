@@ -11,6 +11,7 @@ class Unit(object):
         self.move_dest = None
         self.move_direction = [0, 0]
         self.move_offset = [0, 0]
+        self.highlight_move = False
         self.step = 0
         self.moving = False
         self.move_route = []
@@ -21,6 +22,7 @@ class Unit(object):
                                 ROBE_15, ROBE_16, ROBE_17, ROBE_18
                               ]
         self.clothes = [random.choice(self.other_clothes)]
+        self.square.unit = self
         
     def get_rect(self):
         x = self.square[0] * data.square_size
@@ -33,7 +35,7 @@ class Unit(object):
         return unit_rect
     
     def update(self):
-        MOVESPEED = 1
+        MOVESPEED = data.adjust_for_zoom(2)
         if self.step < data.square_size:
             self.move_offset[0] = self.step * self.move_direction[0]
             self.move_offset[1] = self.step * self.move_direction[1]
@@ -56,23 +58,27 @@ class Unit(object):
                 
                 
     def move_to_target(self):
-        self.move_index += 1
         self.move_route = data.pathfinding_route
-        if self.square not in self.move_route:
-            self.move_one_square(self.move_route[0])
-            self.move_index = 0
-        elif self.move_index < len(self.move_route):
-            self.move_one_square(self.move_route[self.move_index])
+        if self.highlight_move == False:
+            self.highlight_move = True
         else:
-            print "finished"
-            self.move_route = []
-            self.move_index = 0
-            self.moving = False
+            self.move_index += 1
+            if self.square not in self.move_route:
+                self.move_one_square(self.move_route[0])
+                self.move_index = 0
+            elif self.move_index < len(self.move_route):
+                self.move_one_square(self.move_route[self.move_index])
+            else:
+                print "finished"
+                self.move_route = []
+                self.move_index = 0
+                self.moving = False
+                self.highlight_move = False
         
     
     def move_one_square(self,dest):
         if dest.unit != None:
-            print "Destination already has a unit in it"
+            self.attack(dest.unit)
         elif dest.blocked:
             print "Square is blocked"
         elif self.stats['ap'] >= dest.ap_cost:
@@ -88,6 +94,11 @@ class Unit(object):
             self.move_route = []
             self.move_index = 0
             self.moving = False
+            
+    def attack(self, unit):
+        damage = random.randint(1,3)
+        unit.stats['health'] -= damage
+        data.damage = {unit:damage}
             
     def new_turn(self):
         self.ap = self.max_ap

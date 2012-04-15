@@ -7,18 +7,49 @@ from unit_class import unitlist
 from engine_class import data
 from gameboard import board
 
+class ColorShifter():
+    def __init__(self, color_a, color_b):
+        self.color_a = color_a
+        self.color_b = color_b
+        self.current = color_a[:]
+        
+    def color_shift(self):
+        STEPS = 100 # 50 is good, over 255 has no effect
+        increments = []
+        new_color = []
+        for i in range(3):
+            if self.current[i] != self.color_b[i]:
+                inc = self.color_a[i] - self.color_b[i]
+                if abs(inc / STEPS) > abs(self.current[i] - self.color_b[i]):
+                    value = self.color_b[i]
+                else:
+                    if inc / STEPS != 0:
+                        value = self.current[i] - inc / STEPS
+                    else:
+                        value = self.current[i] - (inc / abs(inc))
+                new_color.append(value)
+            else:
+                new_color.append(self.current[i])
+        new_color = tuple(new_color)
+        if new_color == self.color_b:
+            self.color_a, self.color_b = self.color_b[:], self.color_a[:]
+        self.current = new_color
+
+selection_box_cs = ColorShifter((150, 150, 0), (255, 255, 0))
+highlight_move_cs = ColorShifter((0, 150, 0), (50, 200, 50))
+highlight_attack_cs = ColorShifter((150, 0, 0), (200, 50, 50))
+
 class Graphics(object):
     
     def __init__(self):
         self.display = pygame.display.set_mode(data.display_size)
-        self.sel_color_a = (150,150,0)
-        self.sel_color_b = (255,255,0)
-        self.sel_color = self.sel_color_a
-        self.board_thing = (50, 50)
         
         self.DIRTFLOOR = pygame.image.load(os.path.join("./art/brown_dirt.png")).convert()
         self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
         self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
+        
+        self.draw_damage_timer = None
+        self.draw_damage_float = 0
                         
     def draw(self):
         self.draw_start_time = time.time()
@@ -28,8 +59,8 @@ class Graphics(object):
         self.draw_units()
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
-        self.draw_center_circle()
-        self.debug_square()
+        self.draw_highlight_move()
+        self.draw_damage()
         if data.debug:
             self.debug_draw_pathfinding_route()
             self.debug_draw_pathfinding_info()
@@ -44,18 +75,46 @@ class Graphics(object):
         self.update()
         self.draw_total_time = time.time() - self.draw_start_time
         
-    def draw_center_circle(self):
-        center = data.graphics.display.get_rect().center
-        rect = pygame.rect.Rect((0,0), (4, 4))
-        rect.center = center
-        pygame.draw.rect(self.display, RED, rect)
-        
-    def debug_square(self):
-        for row in board.grid:
-            for square in row:
-                rect = square.get_rect()
-                pygame.draw.rect(self.display, GREEN, rect, 2)
-        
+    def draw_highlight_move(self):
+        highlight_move_cs.color_shift()
+        highlight_attack_cs.color_shift()
+        if data.selected_square.unit:
+            unit = data.selected_square.unit
+            if unit.highlight_move:
+                for i in range(len(unit.move_route)):
+                    if i > unit.move_index:
+                        color = highlight_move_cs.current
+                        radius = 8
+                        square = unit.move_route[i]
+                        center = square.get_rect().center
+                        if square.unit:
+                            color = highlight_attack_cs.current
+                            radius = 20
+                        pygame.draw.circle(self.display, color, center, radius )
+                        
+    def draw_damage(self):
+        highlight_attack_cs.color_shift()
+        if len(data.damage.keys()) > 0:
+            if self.draw_damage_timer == None:
+                self.draw_damage_timer = time.time()
+            if time.time() - self.draw_damage_timer <= 2:
+                for unit, number in data.damage.items():
+                    surf = pygame.surface.Surface((data.square_size / 2, data.square_size / 2))
+                    surf.fill(highlight_attack_cs.current)
+                    rect = surf.get_rect()
+                    rect.center = unit.square.get_rect().center
+                    rect.top -= self.draw_damage_float
+                    text = DEJAVUSANS(30).render(str(number),1, WHITE)
+                    t_rect = text.get_rect()
+                    t_rect.topleft = (0, 0)
+                    surf.blit(text, t_rect)
+                    self.display.blit(surf, rect)
+                    self.draw_damage_float = int((time.time() - self.draw_damage_timer) * 30)
+                    print self.draw_damage_float
+            else:
+                data.damage = {}
+                self.draw_damage_timer = None
+                    
     def draw_background(self):
         self.display.fill(DARK_GREY)
         
@@ -112,8 +171,8 @@ class Graphics(object):
                 pygame.draw.line(self.display, color, start, end)
             
     def draw_selected_square_highlight(self):
-        self.sel_color, self.sel_color_a, self.sel_color_b = self.color_shift(self.sel_color, self.sel_color_a, self.sel_color_b)
-        color = self.sel_color
+        selection_box_cs.color_shift()
+        color = selection_box_cs.current
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * data.square_size + data.camera_offset[0] + 1
         y = y * data.square_size + data.camera_offset[1] + 1
@@ -234,28 +293,6 @@ class Graphics(object):
                 
                 pygame.draw.rect(self.display, GREEN, rect, border)
                 square = square.path_parent
-        
-    def color_shift(self, current, start, goal, slowdown = 1):
-        STEPS = 900# 50 is good, over 255 has no effect
-        increments = []
-        new_current = []
-        for i in range(3):
-            if current[i] != goal[i]:
-                inc = start[i] - goal[i]
-                if abs(inc / STEPS) > abs(current[i] - goal[i]):
-                    value = goal[i]
-                else:
-                    if inc / STEPS != 0:
-                        value = current[i] - inc / STEPS
-                    else:
-                        value = current[i] - (inc / abs(inc))
-                new_current.append(value)
-            else:
-                new_current.append(current[i])
-        new_current = tuple(new_current)
-        if new_current == goal:
-            return new_current, goal, start
-        return new_current, start, goal
         
         
     

@@ -1,6 +1,6 @@
 from engine_class import data
 from gameboard import board
-import time, pygame, copy
+import time, pygame
 from constants import *
 
 class AStar():
@@ -10,8 +10,9 @@ class AStar():
         self.draw_final_route = False
         self.no_possible_path = False
         self.run = False
+        self.attack = False
     
-    def start_pathfinding(self, start, goal=board.get_square((6,1))):
+    def start_pathfinding(self, start, goal):
         if goal:
             if goal.blocked:
                 print "square is blocked."
@@ -24,7 +25,10 @@ class AStar():
                 self.start = start
                 self.goal = goal
                 self.open = [start]
-                self.closed = copy.copy(board.blocked_squares)
+                self.closed = board.blocked_squares[:]
+                self.closed.extend(board.get_occupied_squares())
+                if self.goal in self.closed:
+                    self.closed.remove(self.goal)
                 self.step = 0
                 self.square = self.start
         

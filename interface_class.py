@@ -24,6 +24,7 @@ class Interface(object):
         self.drag_camera_startpos = None
         self.drag_camera_endpos = None
         self.init_offset()
+        self.zoom_square = data.selected_square
         
     
     def resize_windows(self):  # Every window initializes and resets its size(rect) here.
@@ -85,7 +86,7 @@ class Interface(object):
                         if data.selected_square.unit != None:
                             data.focus = "move"
                     if event.key == K_F1:
-                        print data.graphics.board_surf.get_rect()
+                        self.zoom_center()
                         
                     if event.key == K_F10:
                         data.focus = "menu1"
@@ -132,6 +133,8 @@ class Interface(object):
                     if event.button == 3:
                         if data.selected_square.unit != None:
                             data.astar.start_pathfinding(data.selected_square, get_square_under_mouse())
+                                
+                            
                     if event.button == DRAGBUTTON:
                         self.drag_camera_start()
                         
@@ -165,6 +168,11 @@ class Interface(object):
                         self.resize_windows()
         
     def zoom_out(self):
+        o = data.camera_offset
+        x, y = data.graphics.display.get_rect().center
+        x -= o[0]
+        y -= o[1]
+        self.zoom_square = get_square_under_pixel((x, y))
         if data.square_size >= 32:
             data.square_size -= 2 * data.zoom_step
             data.unit_size -= 1 * data.zoom_step
@@ -172,6 +180,11 @@ class Interface(object):
             self.zoom_center()
     
     def zoom_in(self):
+        o = data.camera_offset
+        x, y = data.graphics.display.get_rect().center
+        x -= o[0]
+        y -= o[1]
+        self.zoom_square = get_square_under_pixel((x, y))
         if data.square_size < 128:
             data.square_size += 2 * data.zoom_step
             data.unit_size += 1 * data.zoom_step
@@ -179,11 +192,7 @@ class Interface(object):
             self.zoom_center()
             
     def zoom_center(self):
-        x, y = data.graphics.display.get_rect().center
-        square = get_square_under_pixel((x, y))
-        x, y = square.xy
-        print x * data.square_size, y * data.square_size
-        self.center_on_square(square)
+        self.center_on_square(self.zoom_square)
 
     def create_window(self, window_type, name="No name", rect = None, color=GREY, pos=(100, 100), visible=True, font=ORBITRON(12)):
         win = window_type(name, rect, color, visible, font)
@@ -198,7 +207,6 @@ class Interface(object):
     def drag_camera_end(self):
         self.dragging_camera = False
         self.old_camera_offset = data.camera_offset[:]
-        self.zoom_center()
     
     def center_on_square(self, square):
         square_rect = square.get_rect()
@@ -286,7 +294,8 @@ class BottomWindow(Window):
                                   "Intellect: " + str(unit.stats['int']),
                                   "","","",
                                   "Armor: " + str(unit.stats['armor']),
-                                  "M.Resist: " + str(unit.stats['resist'])
+                                  "M.Resist: " + str(unit.stats['resist']),
+                                  "Blocked: " + str(data.selected_square.blocked)
                                   ])
         
         
@@ -337,7 +346,6 @@ def get_square_under_mouse():
         return result
     
 def get_square_under_pixel((x,y)):
-    print "pixel:" + str(x) + ", " + str(y)
     x = x / data.square_size
     y = y / data.square_size
     square = board.get_square((x,y))

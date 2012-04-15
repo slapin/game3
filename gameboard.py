@@ -45,6 +45,14 @@ class Board(object):
         square = self.get_square((x, y))
         square.blocked = True
         
+    def get_occupied_squares(self):
+        occupied = []
+        for row in self.grid:
+            for square in row:
+                if square.unit:
+                    occupied.append(square)
+        return occupied
+    
     def load_map_file(self, mapfile):
         self.grid = []
         self.blocked_squares = []

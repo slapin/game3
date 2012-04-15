@@ -18,6 +18,7 @@ class Data(object):
         self.zoom_step = 4
         self.pathfinding_route = []
         self.debug = True
+        self.damage = {}
         
     def get_display_rect(self):
         return pygame.rect.Rect((0, 0), self.display_size)
@@ -25,6 +26,9 @@ class Data(object):
     def new_turn(self):
         for unit in unitlist:
             unit.new_turn()
+                
+    def adjust_for_zoom(self, number):
+        return (number * data.zoom) / 100
         
 
 data = Data()
