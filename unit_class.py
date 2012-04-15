@@ -93,7 +93,6 @@ class Unit(object):
         self.ap = self.max_ap
         
 def create_unit(name="No Name", square = (0,0),stats = {}):
-    print stats
     unit = Unit(name, square, stats)
     if name != "DUMMY":
         unitlist.append(unit)

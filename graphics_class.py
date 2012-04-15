@@ -11,7 +11,6 @@ class Graphics(object):
     
     def __init__(self):
         self.display = pygame.display.set_mode(data.display_size)
-        self.offset = [0, 0]
         self.DIRTFLOOR = pygame.image.load(os.path.join("./art/brown_dirt.png")).convert()
         self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
         self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
@@ -24,6 +23,7 @@ class Graphics(object):
         self.draw_units()
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
+        self.draw_center_circle()
         if data.debug:
             self.debug_draw_pathfinding_route()
             self.debug_draw_pathfinding_info()
@@ -37,6 +37,12 @@ class Graphics(object):
                 
         self.update()
         self.draw_total_time = time.time() - self.draw_start_time
+        
+    def draw_center_circle(self):
+        center = data.graphics.display.get_rect().center
+        rect = pygame.rect.Rect((0,0), (4, 4))
+        rect.center = center
+        pygame.draw.rect(data.graphics.display, RED, rect)
         
     def draw_background(self):
         self.display.fill(DARK_GREY)
@@ -143,9 +149,6 @@ class Graphics(object):
                 self.display.blit(surface, window.rect)        
         
     def update(self):
-        off = data.camera_offset
-        self.offset[0] += off[0]
-        self.offset[1] += off[1]
         pygame.display.update()
         
     #### debug draws
@@ -231,9 +234,6 @@ def draw_window_contents(surface, window):
         destination = (left, top)
         surface.blit(text,destination)
         top += text.get_rect().height + 10
-        
-def center_rect_on_screen(rect):
-    disp_rect = get_display_rect()
     
 def zoom(number):
     return (number * data.zoom) / 100

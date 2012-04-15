@@ -20,18 +20,6 @@ class Data(object):
         
     def get_display_rect(self):
         return pygame.rect.Rect((0, 0), self.display_size)
-    
-    def zoom_out(self):
-        if self.square_size >= 18:
-            self.square_size -= 2
-            self.unit_size -= 1
-        self.zoom = (self.square_size * 100) / (self.base_square_size)
-    
-    def zoom_in(self):
-        if self.square_size < 256:
-            self.square_size += 2
-            self.unit_size += 1
-        self.zoom = (self.square_size * 100) / (self.base_square_size)
         
     def new_turn(self):
         for unit in unitlist:
