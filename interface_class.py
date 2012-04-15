@@ -78,14 +78,14 @@ class Interface(object):
                     if event.key == K_l:
                         data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
                     if event.key == K_MINUS:
-                        data.zoom_out()
+                        pass
                     if event.key == K_EQUALS:
-                        data.zoom_in()
+                        pass
                     if event.key == K_m:
                         if data.selected_square.unit != None:
                             data.focus = "move"
                     if event.key == K_F1:
-                        print data.selected_square.get_rect()
+                        print data.graphics.board_surf.get_rect()
                         
                     if event.key == K_F10:
                         data.focus = "menu1"
@@ -163,29 +163,28 @@ class Interface(object):
                         pygame.display.set_mode((1280, 800))
                         data.display_size = (1280,800)
                         self.resize_windows()
-                        
-    def zoom_offset(self, pos_neg):
-        x, y = 8, 10
-        if pos_neg == "in":
-            x = x * -1
-            y = y * -1
-        data.camera_offset[0] += x
-        data.camera_offset[1] += y
         
     def zoom_out(self):
         if data.square_size >= 32:
-            data.square_size -= 2
-            data.unit_size -= 1
+            data.square_size -= 2 * data.zoom_step
+            data.unit_size -= 1 * data.zoom_step
             data.zoom = (data.square_size * 100) / (data.base_square_size)
-            self.zoom_offset("out")
+            self.zoom_center()
     
     def zoom_in(self):
-        if data.square_size < 96:
-            data.square_size += 2
-            data.unit_size += 1
+        if data.square_size < 128:
+            data.square_size += 2 * data.zoom_step
+            data.unit_size += 1 * data.zoom_step
             data.zoom = (data.square_size * 100) / (data.base_square_size)
-            self.zoom_offset("in")
-                    
+            self.zoom_center()
+            
+    def zoom_center(self):
+        x, y = data.graphics.display.get_rect().center
+        square = get_square_under_pixel((x, y))
+        x, y = square.xy
+        print x * data.square_size, y * data.square_size
+        self.center_on_square(square)
+
     def create_window(self, window_type, name="No name", rect = None, color=GREY, pos=(100, 100), visible=True, font=ORBITRON(12)):
         win = window_type(name, rect, color, visible, font)
         windows.append(win)
@@ -199,6 +198,7 @@ class Interface(object):
     def drag_camera_end(self):
         self.dragging_camera = False
         self.old_camera_offset = data.camera_offset[:]
+        self.zoom_center()
     
     def center_on_square(self, square):
         square_rect = square.get_rect()
@@ -208,10 +208,6 @@ class Interface(object):
         square_rect.top -= square.xy[1] * data.square_size
         self.old_camera_offset = list(data.camera_offset)        
         data.camera_offset = list(square_rect.topleft)
-  
-    def center_on_mouse(self):
-        mpos = pygame.mouse.get_pos()
-        
 
     def update_camera_offset(self):
         self.drag_camera_endpos = pygame.mouse.get_pos()
@@ -258,7 +254,7 @@ class DebugWindow(Window):
                             "Board Size:" + str(board.board_size),
                             "Mouse Pos: " + str(pygame.mouse.get_pos()),
                             "Dragging Cam: " + str(data.interface.dragging_camera),
-                            "I.Offset: " + str(data.camera_offset),
+                            "selsquare rect: " + str(data.selected_square.get_rect()),
                             "Draw square numbers: " + str(data.draw_square_numbers),
                             "FPS: " + str(int(data.fps)),
                             "Selected square: " + str(data.selected_square),
@@ -267,7 +263,8 @@ class DebugWindow(Window):
                             "data.camera_offset: " + str(data.camera_offset),
                             "data.zoom: " + str(data.zoom) + "%",
                             "data.square_size: " + str(data.square_size),
-                            "graphics.draw() time: " + str(data.graphics.draw_total_time)[:6]
+                            "graphics.draw() time: " + str(data.graphics.draw_total_time)[:6],
+                            "board_surf_rect: " + str(data.graphics.board_surf.get_rect())
                             ])
             self.contents = contents
         
@@ -338,6 +335,16 @@ def get_square_under_mouse():
         return data.selected_square
     else:
         return result
+    
+def get_square_under_pixel((x,y)):
+    print "pixel:" + str(x) + ", " + str(y)
+    x = x / data.square_size
+    y = y / data.square_size
+    square = board.get_square((x,y))
+    if square:
+        return square
+    else:
+        return data.selected_square
     
 def move_unit_one_square(direction):
     if direction == 'north': mod = (0,-1)

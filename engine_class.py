@@ -15,6 +15,7 @@ class Data(object):
         self.base_unit_size = 32
         self.unit_size = 32
         self.zoom = 100
+        self.zoom_step = 4
         self.pathfinding_route = []
         self.debug = True
         

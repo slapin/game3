@@ -11,6 +11,11 @@ class Graphics(object):
     
     def __init__(self):
         self.display = pygame.display.set_mode(data.display_size)
+        self.sel_color_a = (150,150,0)
+        self.sel_color_b = (255,255,0)
+        self.sel_color = self.sel_color_a
+        self.board_thing = (50, 50)
+        
         self.DIRTFLOOR = pygame.image.load(os.path.join("./art/brown_dirt.png")).convert()
         self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
         self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
@@ -24,6 +29,7 @@ class Graphics(object):
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
         self.draw_center_circle()
+        self.debug_square()
         if data.debug:
             self.debug_draw_pathfinding_route()
             self.debug_draw_pathfinding_info()
@@ -42,29 +48,39 @@ class Graphics(object):
         center = data.graphics.display.get_rect().center
         rect = pygame.rect.Rect((0,0), (4, 4))
         rect.center = center
-        pygame.draw.rect(data.graphics.display, RED, rect)
+        pygame.draw.rect(self.display, RED, rect)
+        
+    def debug_square(self):
+        for row in board.grid:
+            for square in row:
+                rect = square.get_rect()
+                pygame.draw.rect(self.display, GREEN, rect, 2)
         
     def draw_background(self):
         self.display.fill(DARK_GREY)
         
     def draw_square_images(self):
+        br = board.get_rect()
+        self.board_surf = pygame.surface.Surface((br.width, br.height))
         dirt_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
         dirt_surf.blit(self.DIRTFLOOR,(0,0))
         wall_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
         wall_surf.blit(self.STONEWALL,(0,0))
         dirt_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.scale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
+        pygame.transform.smoothscale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
         wall_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.scale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
+        pygame.transform.smoothscale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
         for column in range(board.board_size[0]):
             for row in range(board.board_size[1]):
                 square = board.get_square((column, row))
-                pixel_x = square.xy[0] * data.square_size + data.camera_offset[0]
-                pixel_y = square.xy[1] * data.square_size + data.camera_offset[1]
-                if square.blocked:
-                    self.display.blit(wall_surf_scaled,(pixel_x, pixel_y))
-                else:
-                    self.display.blit(dirt_surf_scaled,(pixel_x, pixel_y))
+                if True:
+                    pixel_x = square.xy[0] * data.square_size
+                    pixel_y = square.xy[1] * data.square_size
+                    if square.blocked:
+                        self.board_surf.blit(wall_surf_scaled,(pixel_x, pixel_y))
+                    else:
+                        self.board_surf.blit(dirt_surf_scaled,(pixel_x, pixel_y))
+        self.display.blit(self.board_surf,(data.camera_offset[0],data.camera_offset[1]))
         
     def draw_square_numbers(self):
         font_size = zoom(14)
@@ -96,7 +112,8 @@ class Graphics(object):
                 pygame.draw.line(self.display, color, start, end)
             
     def draw_selected_square_highlight(self):
-        color = (120,160,190)
+        self.sel_color, self.sel_color_a, self.sel_color_b = self.color_shift(self.sel_color, self.sel_color_a, self.sel_color_b)
+        color = self.sel_color
         x, y = data.selected_square.xy[0], data.selected_square.xy[1]
         x = x * data.square_size + data.camera_offset[0] + 1
         y = y * data.square_size + data.camera_offset[1] + 1
@@ -217,6 +234,30 @@ class Graphics(object):
                 
                 pygame.draw.rect(self.display, GREEN, rect, border)
                 square = square.path_parent
+        
+    def color_shift(self, current, start, goal, slowdown = 1):
+        STEPS = 900# 50 is good, over 255 has no effect
+        increments = []
+        new_current = []
+        for i in range(3):
+            if current[i] != goal[i]:
+                inc = start[i] - goal[i]
+                if abs(inc / STEPS) > abs(current[i] - goal[i]):
+                    value = goal[i]
+                else:
+                    if inc / STEPS != 0:
+                        value = current[i] - inc / STEPS
+                    else:
+                        value = current[i] - (inc / abs(inc))
+                new_current.append(value)
+            else:
+                new_current.append(current[i])
+        new_current = tuple(new_current)
+        if new_current == goal:
+            return new_current, goal, start
+        return new_current, start, goal
+        
+        
     
 def draw_window_contents(surface, window):
     """ goes through the list of strings in window.contents and renders them """
@@ -237,3 +278,6 @@ def draw_window_contents(surface, window):
     
 def zoom(number):
     return (number * data.zoom) / 100
+
+        
+        
