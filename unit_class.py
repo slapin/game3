@@ -21,7 +21,7 @@ class Unit(object):
                                ROBE_8, ROBE_9, ROBE_10, ROBE_11, ROBE_12, ROBE_13, ROBE_14,
                                 ROBE_15, ROBE_16, ROBE_17, ROBE_18
                               ]
-        self.clothes = [random.choice(self.other_clothes)]
+        self.clothes = [self.other_clothes[5]]#[random.choice(self.other_clothes)]
         self.square.unit = self
         
     def get_rect(self):
@@ -98,7 +98,7 @@ class Unit(object):
     def attack(self, unit):
         damage = random.randint(1,3)
         unit.stats['health'] -= damage
-        data.damage = {unit:damage}
+        data.create_damage_result(self, unit, damage)
             
     def new_turn(self):
         self.ap = self.max_ap
@@ -136,5 +136,6 @@ def create_random_unit():
 
 unitlist = []
 random_unit_number = 0
-create_random_unit()
+for i in range(10):
+    create_random_unit()
 

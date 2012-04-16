@@ -1,8 +1,20 @@
-import pygame
+import pygame, time
 import constants
 from constants import *
 
 ZOOM_FACTOR = 8
+
+class DamageResult():
+    def __init__(self, attacker, defender, num):
+        self.attacker = attacker
+        self.defender = defender
+        self.num = num
+        self.float = 0
+        self.start_time = time.time()
+        self.timer = 2
+        
+    def __str__(self):
+        return str(self.attacker) + ", " + str(self.defender) + ", " + str(self.num)
 
 class Data(object):
     def __init__(self):
@@ -18,7 +30,10 @@ class Data(object):
         self.zoom_step = 4
         self.pathfinding_route = []
         self.debug = True
-        self.damage = {}
+        self.damage = []
+        
+    def create_damage_result(self, attacker, defender, num):
+        self.damage.append(DamageResult(attacker, defender, num))
         
     def get_display_rect(self):
         return pygame.rect.Rect((0, 0), self.display_size)

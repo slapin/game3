@@ -261,9 +261,6 @@ class DebugWindow(Window):
                             "Focus:" + data.focus,
                             "Board Size:" + str(board.board_size),
                             "Mouse Pos: " + str(pygame.mouse.get_pos()),
-                            "Dragging Cam: " + str(data.interface.dragging_camera),
-                            "selsquare rect: " + str(data.selected_square.get_rect()),
-                            "Draw square numbers: " + str(data.draw_square_numbers),
                             "FPS: " + str(int(data.fps)),
                             "Selected square: " + str(data.selected_square),
                             "Visible windows: " + str(visible_windows),
@@ -272,7 +269,7 @@ class DebugWindow(Window):
                             "data.zoom: " + str(data.zoom) + "%",
                             "data.square_size: " + str(data.square_size),
                             "graphics.draw() time: " + str(data.graphics.draw_total_time)[:6],
-                            "board_surf_rect: " + str(data.graphics.board_surf.get_rect())
+                            "damage results: " + str(len(data.damage))
                             ])
             self.contents = contents
         

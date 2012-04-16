@@ -6,6 +6,7 @@ from interface_class import windows
 from unit_class import unitlist
 from engine_class import data
 from gameboard import board
+import math
 
 class ColorShifter():
     def __init__(self, color_a, color_b):
@@ -47,9 +48,8 @@ class Graphics(object):
         self.DIRTFLOOR = pygame.image.load(os.path.join("./art/brown_dirt.png")).convert()
         self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
         self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
-        
-        self.draw_damage_timer = None
-        self.draw_damage_float = 0
+        self.DAMAGECIRCLE = pygame.image.load(os.path.join("./art/jr_red_circle.png")).convert()
+        self.TREE_1 = pygame.image.load(os.path.join("./art/jr_tree_1.png")).convert()
                         
     def draw(self):
         self.draw_start_time = time.time()
@@ -89,56 +89,69 @@ class Graphics(object):
                         center = square.get_rect().center
                         if square.unit:
                             color = highlight_attack_cs.current
-                            radius = 20
+                            radius = 12
                         pygame.draw.circle(self.display, color, center, radius )
                         
     def draw_damage(self):
-        highlight_attack_cs.color_shift()
-        if len(data.damage.keys()) > 0:
-            if self.draw_damage_timer == None:
-                self.draw_damage_timer = time.time()
-            if time.time() - self.draw_damage_timer <= 2:
-                for unit, number in data.damage.items():
-                    surf = pygame.surface.Surface((data.square_size / 2, data.square_size / 2))
-                    surf.fill(highlight_attack_cs.current)
+        font = DEJAVUSANS(data.adjust_for_zoom(20))
+        if len(data.damage) > 0:
+            for dam in data.damage:
+                if time.time() - dam.start_time >= 3:
+                    del dam
+                else:
+                    surf = self.scale_image_32(self.DAMAGECIRCLE)
+                    surf.set_colorkey(BLACK)
                     rect = surf.get_rect()
-                    rect.center = unit.square.get_rect().center
-                    rect.top -= self.draw_damage_float
-                    text = DEJAVUSANS(30).render(str(number),1, WHITE)
+                    t_center = rect.center
+                    rect.center = dam.defender.square.get_rect().center
+                    rect.top -= dam.float
+                    text = font.render(str(dam.num),1, WHITE)
                     t_rect = text.get_rect()
-                    t_rect.topleft = (0, 0)
+                    t_rect.center = t_center
                     surf.blit(text, t_rect)
-                    self.display.blit(surf, rect)
-                    self.draw_damage_float = int((time.time() - self.draw_damage_timer) * 30)
-                    print self.draw_damage_float
-            else:
-                data.damage = {}
-                self.draw_damage_timer = None
+                    scaled_surf = pygame.transform.smoothscale(surf, (data.unit_size, data.unit_size))
+                    self.display.blit(scaled_surf, rect)
+                    dam.float += (25 - dam.float) / 20.0
                     
     def draw_background(self):
         self.display.fill(DARK_GREY)
         
+    def scale_image_64(self, image):
+        surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
+        surf.blit(image,(0,0))
+        surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
+        pygame.transform.scale(surf, (data.square_size, data.square_size), surf_scaled)
+        return surf_scaled
+    
+    def scale_image_32(self, image):
+        surf = pygame.surface.Surface((data.base_unit_size, data.base_unit_size))
+        surf.blit(image,(0,0))
+        surf_scaled = pygame.surface.Surface((data.unit_size, data.unit_size))
+        pygame.transform.scale(surf, (data.unit_size, data.unit_size), surf_scaled)
+        return surf_scaled
+            
     def draw_square_images(self):
         br = board.get_rect()
         self.board_surf = pygame.surface.Surface((br.width, br.height))
-        dirt_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
-        dirt_surf.blit(self.DIRTFLOOR,(0,0))
-        wall_surf = pygame.surface.Surface((data.base_square_size, data.base_square_size))
-        wall_surf.blit(self.STONEWALL,(0,0))
-        dirt_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.smoothscale(dirt_surf, (data.square_size, data.square_size), dirt_surf_scaled)
-        wall_surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
-        pygame.transform.smoothscale(wall_surf, (data.square_size, data.square_size), wall_surf_scaled)
+        
+        dirt_surf = self.scale_image_64(self.DIRTFLOOR)
+        wall_surf = self.scale_image_64(self.STONEWALL)
+        tree_surf = self.scale_image_64(self.TREE_1)
+        tree_surf.set_colorkey(DC_ALPHA)
+
+        
         for column in range(board.board_size[0]):
             for row in range(board.board_size[1]):
                 square = board.get_square((column, row))
-                if True:
-                    pixel_x = square.xy[0] * data.square_size
-                    pixel_y = square.xy[1] * data.square_size
-                    if square.blocked:
-                        self.board_surf.blit(wall_surf_scaled,(pixel_x, pixel_y))
-                    else:
-                        self.board_surf.blit(dirt_surf_scaled,(pixel_x, pixel_y))
+                pixel_x = square.xy[0] * data.square_size
+                pixel_y = square.xy[1] * data.square_size
+                if square.image == '#':
+                    self.board_surf.blit(wall_surf,(pixel_x, pixel_y))
+                elif square.image == '.':
+                    self.board_surf.blit(dirt_surf,(pixel_x, pixel_y))
+                elif square.image == 't':
+                    self.board_surf.blit(dirt_surf,(pixel_x, pixel_y))
+                    self.board_surf.blit(tree_surf, (pixel_x, pixel_y))
         self.display.blit(self.board_surf,(data.camera_offset[0],data.camera_offset[1]))
         
     def draw_square_numbers(self):

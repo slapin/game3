@@ -75,7 +75,16 @@ class Board(object):
             x = 0
             for square in row:
                 if square == '#':
-                    self.get_square((x,y)).blocked = True
+                    sq = self.get_square((x,y))
+                    sq.blocked = True
+                    sq.image = '#'
+                elif square == 't':
+                    sq = self.get_square((x,y))
+                    sq.blocked = True
+                    sq.image = 't'
+                elif square == '.':
+                    sq = self.get_square((x,y))
+                    sq.image = '.'
                 x += 1
             y += 1
         f.close()
