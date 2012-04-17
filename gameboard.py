@@ -85,6 +85,10 @@ class Board(object):
                 elif square == '.':
                     sq = self.get_square((x,y))
                     sq.image = '.'
+                elif square == 'o':
+                    sq = self.get_square((x,y))
+                    sq.blocked = True
+                    sq.image = 'o'
                 x += 1
             y += 1
         f.close()

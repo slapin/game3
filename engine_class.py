@@ -53,6 +53,9 @@ from interface_class import Interface
 from gameboard import board
 from pathfinding import astar
 from unit_class import unitlist
+from items import itemlist
+
+data.itemlist = itemlist
 
 data.selected_square = board.get_square((0, 0))
 data.astar = astar
@@ -79,6 +82,5 @@ class Engine(object):
         graphics.draw()
         interface.run()
         for unit in unitlist:
-            if unit.move_dest != None:
-                unit.update()
+            unit.update()
 

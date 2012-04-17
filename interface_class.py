@@ -58,6 +58,11 @@ class Interface(object):
                     data.debug = toggle_boolvar(data.debug)
                     self.debug_window.visible = data.debug
                     
+            if data.focus == "inventory":
+                if event.type == KEYDOWN:
+                    if event.key == K_i:
+                        data.focus = "normal"
+                    
             if data.focus == "move":
                 if event.type == KEYDOWN:
                     if event.key == K_m:
@@ -74,34 +79,42 @@ class Interface(object):
                     
             elif data.focus == "normal":
                 if event.type == KEYDOWN:
+                    if event.key == K_i:
+                        data.focus = "inventory"
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
                         unit_class.create_random_unit()
                     if event.key == K_l:
                         data.draw_square_lines = toggle_boolvar(data.draw_square_lines)
                     if event.key == K_MINUS:
-                        pass
+                        unit = data.selected_square.unit
+                        if unit:
+                            cur_i = data.itemlist.index(unit.equipped[0])
+                            if cur_i <= 0:
+                                unit.equipped = [data.itemlist[-1]]
+                            else:
+                                unit.equipped = [data.itemlist[cur_i - 1]]
+                            print data.itemlist.index(unit.equipped[0]) + 1
                     if event.key == K_EQUALS:
-                        pass
+                        unit = data.selected_square.unit
+                        if unit:
+                            cur_i = data.itemlist.index(unit.equipped[0])
+                            if cur_i < len(data.itemlist) - 1:
+                                unit.equipped = [data.itemlist[cur_i + 1]]
+                            else:
+                                unit.equipped = [data.itemlist[0]]
+                            print data.itemlist.index(unit.equipped[0]) + 1    
                     if event.key == K_m:
                         if data.selected_square.unit != None:
                             data.focus = "move"
                     if event.key == K_F1:
-                        self.zoom_center()
+                        pass            
                         
                     if event.key == K_F10:
                         data.focus = "menu1"
                         self.menu1.visible = True
                         
                     if event.key == K_F2:
-                        unit = data.selected_square.unit
-                        if unit:
-                            ind = unit.other_clothes.index(unit.clothes[0])
-                            if ind >= len(unit.other_clothes) - 1:
-                                ind = 0
-                            else:
-                                ind += 1
-                            unit.clothes = [unit.other_clothes[ind]]
-                            print ind
+                        pass
                         
                     if event.key == K_DOWN or event.key == K_UP or event.key == K_RIGHT or event.key == K_LEFT: # move data.selected_square with arrow keys
                         if event.key == K_DOWN or event.key == K_RIGHT: inc = 1
@@ -285,14 +298,12 @@ class BottomWindow(Window):
                                   "Health:  " + str(unit.stats['health']),
                                   "Energy:  " + str(unit.stats['energy']),
                                   "AP:  " + str(unit.stats['ap']) + "/" + str(unit.stats['max ap']),
-                                  "","",
                                   "Strength: " + str(unit.stats['str']),
                                   "Agility: " + str(unit.stats['agi']),
                                   "Intellect: " + str(unit.stats['int']),
-                                  "","","",
+                                  "Attack: " + str(unit.stats['damage']),
                                   "Armor: " + str(unit.stats['armor']),
-                                  "M.Resist: " + str(unit.stats['resist']),
-                                  "Blocked: " + str(data.selected_square.blocked)
+                                  "M.Resist: " + str(unit.stats['resist'])
                                   ])
         
         

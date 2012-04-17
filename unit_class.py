@@ -1,9 +1,8 @@
 from constants import *
 from gameboard import board
 from engine_class import data
-from clothes import *
 import random
-
+import items
 class Unit(object):
     def __init__(self, name="No Name", square = (4,4), stats = {}):
         self.name = name
@@ -16,12 +15,15 @@ class Unit(object):
         self.moving = False
         self.move_route = []
         self.move_index = 0
-        self.stats = stats
-        self.other_clothes = [ROBE_1, ROBE_2, ROBE_3, ROBE_4, ROBE_5, ROBE_6, ROBE_7,
-                               ROBE_8, ROBE_9, ROBE_10, ROBE_11, ROBE_12, ROBE_13, ROBE_14,
-                                ROBE_15, ROBE_16, ROBE_17, ROBE_18
-                              ]
-        self.clothes = [self.other_clothes[5]]#[random.choice(self.other_clothes)]
+        self.base_stats = stats
+        self.initialize_stats()
+        self.stats = self.base_stats
+        self.equipped = [
+                         random.choice(items.robelist),
+                         random.choice(items.weaponlist)
+                         ]
+        self.recalculate_equipment_bonuses()
+        self.backpack = []
         self.square.unit = self
         
     def get_rect(self):
@@ -35,27 +37,29 @@ class Unit(object):
         return unit_rect
     
     def update(self):
-        MOVESPEED = data.adjust_for_zoom(2)
-        if self.step < data.square_size:
-            self.move_offset[0] = self.step * self.move_direction[0]
-            self.move_offset[1] = self.step * self.move_direction[1]
-            self.step += MOVESPEED
-            if self.step >= data.square_size:
-#                print self.name + " moved to " + str(self.move_dest) + " from " + str(self.square) 
-                self.square.unit = None
-                self.square = self.move_dest
-                self.square.unit = self
-                data.selected_square = self.move_dest
-                self.step = 0
-                self.move_dest = None
-                self.move_direction = [0, 0]
-                self.move_offset = [0, 0]
-                self.moving = False
-        if len(self.move_route) > 0:
-            if self.moving == False:
-                self.move_to_target()
-            
-                
+        if self.stats['health'] <= 0:
+            self.square.unit = None
+            unitlist.remove(self)
+        elif self.move_dest != None:
+            MOVESPEED = data.adjust_for_zoom(2)
+            if self.step < data.square_size:
+                self.move_offset[0] = self.step * self.move_direction[0]
+                self.move_offset[1] = self.step * self.move_direction[1]
+                self.step += MOVESPEED
+                if self.step >= data.square_size:
+    #                print self.name + " moved to " + str(self.move_dest) + " from " + str(self.square) 
+                    self.square.unit = None
+                    self.square = self.move_dest
+                    self.square.unit = self
+                    data.selected_square = self.move_dest
+                    self.step = 0
+                    self.move_dest = None
+                    self.move_direction = [0, 0]
+                    self.move_offset = [0, 0]
+                    self.moving = False
+            if len(self.move_route) > 0:
+                if self.moving == False:
+                    self.move_to_target()
                 
     def move_to_target(self):
         self.move_route = data.pathfinding_route
@@ -96,9 +100,25 @@ class Unit(object):
             self.moving = False
             
     def attack(self, unit):
-        damage = random.randint(1,3)
+        equipment_bonus = 0
+        for item in self.equipped:
+            if 'damage' in item.stats.keys():
+                equipment_bonus += item.stats['damage']
+        damage = 0 + equipment_bonus - unit.stats['armor']
         unit.stats['health'] -= damage
         data.create_damage_result(self, unit, damage)
+        
+    def initialize_stats(self):
+        statlist = ['max_ap', 'armor', 'damage', 'strength', 'intellect', 'agility']
+        for key in statlist:
+            if key not in self.base_stats.keys():
+                self.base_stats[key] = 0
+        
+    def recalculate_equipment_bonuses(self):
+        self.stats = self.base_stats
+        for item in self.equipped:
+            for k,v in item.stats.items():
+                self.stats[k] += v
             
     def new_turn(self):
         self.ap = self.max_ap
@@ -114,19 +134,19 @@ def create_random_unit():
     random_unit_number += 1
     name = "Random " + str(random_unit_number)
     open_squares = board.get_unblocked_squares()
-    for item in open_squares:
-        if item.unit != None:
-            open_squares.remove(item)
+    for square in open_squares:
+        if square.unit != None:
+            open_squares.remove(square)
     square = random.choice(open_squares)
     stats = {}
-    min, max = 10, 15
+    low, high = 8, 15
     t = ["str", "agi", "int"]
     for item in t:
-        stats[item] = random.randint(min, max)
+        stats[item] = random.randint(low, high)
     max_ap = 10
     stats["max ap"] = max_ap
     stats["ap"] = max_ap
-    stats["health"] = 30
+    stats["health"] = 3
     stats["energy"] = 20
     stats["armor"] = 1
     stats["deflect"] = 10

@@ -49,7 +49,8 @@ class Graphics(object):
         self.STONEWALL = pygame.image.load(os.path.join("./art/grey_wall.png")).convert()
         self.HUMAN = pygame.image.load(os.path.join("./art/dc-pl.png")).convert()
         self.DAMAGECIRCLE = pygame.image.load(os.path.join("./art/jr_red_circle.png")).convert()
-        self.TREE_1 = pygame.image.load(os.path.join("./art/jr_tree_1.png")).convert()
+        self.TREE_1 = pygame.image.load(os.path.join("./art/tree_1.png")).convert()
+        self.ROCK_1 = pygame.image.load(os.path.join("./art/rock_1.png")).convert()
                         
     def draw(self):
         self.draw_start_time = time.time()
@@ -110,6 +111,7 @@ class Graphics(object):
                     t_rect.center = t_center
                     surf.blit(text, t_rect)
                     scaled_surf = pygame.transform.smoothscale(surf, (data.unit_size, data.unit_size))
+                    scaled_surf.set_alpha(180)
                     self.display.blit(scaled_surf, rect)
                     dam.float += (25 - dam.float) / 20.0
                     
@@ -121,6 +123,7 @@ class Graphics(object):
         surf.blit(image,(0,0))
         surf_scaled = pygame.surface.Surface((data.square_size, data.square_size))
         pygame.transform.scale(surf, (data.square_size, data.square_size), surf_scaled)
+        surf_scaled.convert_alpha()
         return surf_scaled
     
     def scale_image_32(self, image):
@@ -138,20 +141,27 @@ class Graphics(object):
         wall_surf = self.scale_image_64(self.STONEWALL)
         tree_surf = self.scale_image_64(self.TREE_1)
         tree_surf.set_colorkey(DC_ALPHA)
+        rock_surf = self.scale_image_64(self.ROCK_1)
+        rock_surf.set_colorkey(DC_ALPHA)
+
 
         
         for column in range(board.board_size[0]):
             for row in range(board.board_size[1]):
                 square = board.get_square((column, row))
-                pixel_x = square.xy[0] * data.square_size
-                pixel_y = square.xy[1] * data.square_size
+                x = square.xy[0] * data.square_size
+                y = square.xy[1] * data.square_size
                 if square.image == '#':
-                    self.board_surf.blit(wall_surf,(pixel_x, pixel_y))
+                    self.board_surf.blit(wall_surf,(x,y))
                 elif square.image == '.':
-                    self.board_surf.blit(dirt_surf,(pixel_x, pixel_y))
+                    self.board_surf.blit(dirt_surf,(x,y))
                 elif square.image == 't':
-                    self.board_surf.blit(dirt_surf,(pixel_x, pixel_y))
-                    self.board_surf.blit(tree_surf, (pixel_x, pixel_y))
+                    self.board_surf.blit(dirt_surf,(x,y))
+                    self.board_surf.blit(tree_surf, (x,y))
+                elif square.image == 'o':
+                    self.board_surf.blit(dirt_surf,(x,y))
+                    self.board_surf.blit(rock_surf,(x,y))
+                
         self.display.blit(self.board_surf,(data.camera_offset[0],data.camera_offset[1]))
         
     def draw_square_numbers(self):
@@ -218,14 +228,14 @@ class Graphics(object):
             rect.top += unit.move_offset[1]
             scaled_surf.set_colorkey(DC_ALPHA)
             self.display.blit(scaled_surf, rect)
-            for item in unit.clothes:
+            for item in unit.equipped:
                 c_surf = pygame.surface.Surface((16, 32))
-                c_surf.blit(self.HUMAN, item[0])
+                c_surf.blit(self.HUMAN, item.imagedata[0])
                 c_surf_scaled = pygame.surface.Surface((zoom(16 * UNITSCALE),zoom(32 * UNITSCALE)))
                 pygame.transform.scale(c_surf, (zoom(16 * UNITSCALE), zoom(32 * UNITSCALE)), c_surf_scaled)
                 c_surf_scaled.set_colorkey(DC_ALPHA)
-                rect.left += zoom(item[1][0])
-                rect.top += zoom(item[1][1])
+                rect.left += zoom(item.imagedata[1][0])
+                rect.top += zoom(item.imagedata[1][1])
                 self.display.blit(c_surf_scaled, rect)
             
     
