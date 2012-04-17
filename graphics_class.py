@@ -57,11 +57,13 @@ class Graphics(object):
         self.draw_background()
         self.draw_square_images()
         self.draw_gameboard()
+        self.draw_hostiles()
         self.draw_units()
         self.draw_square_numbers()
         self.draw_selected_square_highlight()
         self.draw_highlight_move()
         self.draw_damage()
+        self.draw_turn_number()
         if data.debug:
             self.debug_draw_pathfinding_route()
             self.debug_draw_pathfinding_info()
@@ -75,6 +77,28 @@ class Graphics(object):
                 
         self.update()
         self.draw_total_time = time.time() - self.draw_start_time
+    
+    def draw_hostiles(self):
+            for unit in unitlist:
+                if unit.faction == data.factions[1]:
+                    color = RED
+                elif unit.faction == data.factions[0]:
+                    color = GREEN
+                else:
+                    color = BLUE
+                rect = unit.square.get_rect()
+                pygame.draw.rect(self.display, color, rect, 2)
+        
+    def draw_turn_number(self):
+        surf = pygame.surface.Surface((200,50))
+        surf.fill(BLACK)
+        text = DEJAVUSANS(20).render("Turn: " + str(data.turn_num) + " Side: " + str(data.turn), 1, WHITE)
+        t_rect = text.get_rect()
+        t_rect.center = surf.get_rect().center
+        surf.blit(text, t_rect)
+        x = self.display.get_rect().width - 200
+        self.display.blit(surf, (x,0))
+        
         
     def draw_highlight_move(self):
         highlight_move_cs.color_shift()

@@ -31,6 +31,9 @@ class Data(object):
         self.pathfinding_route = []
         self.debug = True
         self.damage = []
+        self.factions = []
+        self.turn_num = 1
+        self.turn = []
         
     def create_damage_result(self, attacker, defender, num):
         self.damage.append(DamageResult(attacker, defender, num))
@@ -39,15 +42,25 @@ class Data(object):
         return pygame.rect.Rect((0, 0), self.display_size)
         
     def new_turn(self):
+        data.turn_num += 1
         for unit in unitlist:
-            unit.new_turn()
-                
+            unit.new_turn()       
+            
+    def end_turn(self):
+        print self.factions
+        cur_ind = self.factions.index(data.turn)
+        if cur_ind >= len(self.factions) - 1:
+            ind = 0
+            self.new_turn()
+        else:
+            ind = cur_ind + 1
+        self.turn = self.factions[ind]
+                    
     def adjust_for_zoom(self, number):
-        return (number * data.zoom) / 100
+        return (number * self.zoom) / 100
         
 
 data = Data()
-
 from graphics_class import Graphics
 from interface_class import Interface
 from gameboard import board
@@ -56,6 +69,7 @@ from unit_class import unitlist
 from items import itemlist
 
 data.itemlist = itemlist
+data.turn = data.factions[0]
 
 data.selected_square = board.get_square((0, 0))
 data.astar = astar
@@ -83,4 +97,5 @@ class Engine(object):
         interface.run()
         for unit in unitlist:
             unit.update()
+
 

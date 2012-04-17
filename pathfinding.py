@@ -13,7 +13,7 @@ class AStar():
         self.attack = False
     
     def start_pathfinding(self, start, goal):
-        if goal:
+        if data.turn == start.unit.faction:
             if goal.blocked:
                 print "square is blocked."
             else:
@@ -31,6 +31,8 @@ class AStar():
                     self.closed.remove(self.goal)
                 self.step = 0
                 self.square = self.start
+        else:
+            print "It is not this side's turn to move"
         
     def run_pathfinding(self):
         if self.no_possible_path == True:

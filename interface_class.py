@@ -15,7 +15,9 @@ class Interface(object):
         # Windows - This determines the DRAW ORDER in GRAPHICS, FIRST IN - FIRST DRAWN
         self.menu1 = self.create_window(Window, "Menu1", color = DARK_BROWN, visible = False)
         self.bottom = self.create_window(BottomWindow, "Bottom", color = BLACK, font = DEJAVUSANS(20))
-        self.debug_window = self.create_window(DebugWindow, "Debug", font=DEJAVUSANS(12), visible = True)
+        self.debug_window = self.create_window(DebugWindow, "Debug", font=DEJAVUSANS(12), visible = False)
+        self.inventory = InventoryWindow("Inventory", rect = get_centered_window_rect((150,150)), color = (40,40,40), visible = False, font = DEJAVUSANS(16))
+        windows.append(self.inventory)
 
         self.resize_windows()
         # End Windows
@@ -61,9 +63,10 @@ class Interface(object):
             if data.focus == "inventory":
                 if event.type == KEYDOWN:
                     if event.key == K_i:
+                        self.inventory.visible = False
                         data.focus = "normal"
                     
-            if data.focus == "move":
+            elif data.focus == "move":
                 if event.type == KEYDOWN:
                     if event.key == K_m:
                         data.focus = "normal"
@@ -81,6 +84,7 @@ class Interface(object):
                 if event.type == KEYDOWN:
                     if event.key == K_i:
                         data.focus = "inventory"
+                        self.inventory.visible = True
                     if event.key == K_t: # LET"S TEST SOME JUNK HERE, SONS.
                         unit_class.create_random_unit()
                     if event.key == K_l:
@@ -107,7 +111,7 @@ class Interface(object):
                         if data.selected_square.unit != None:
                             data.focus = "move"
                     if event.key == K_F1:
-                        pass            
+                        data.end_turn()            
                         
                     if event.key == K_F10:
                         data.focus = "menu1"
@@ -269,6 +273,9 @@ class DebugWindow(Window):
                     visible_windows.append(win.name)
                 else:
                     not_visible.append(win.name)
+            item_debug = "None"
+            if data.selected_square.unit:
+                item_debug = "Robe:" + str(data.selected_square.unit.equipped[1].name)
 
             contents.extend([ ########## DEBUG WINDOW CONTENTS
                             "Focus:" + data.focus,
@@ -276,6 +283,7 @@ class DebugWindow(Window):
                             "Mouse Pos: " + str(pygame.mouse.get_pos()),
                             "FPS: " + str(int(data.fps)),
                             "Selected square: " + str(data.selected_square),
+                            robe_debug,
                             "Visible windows: " + str(visible_windows),
                             "Not Visible: " + str(not_visible),
                             "data.camera_offset: " + str(data.camera_offset),
@@ -294,7 +302,7 @@ class BottomWindow(Window):
         self.contents = []
         unit = data.selected_square.unit
         if unit != None:  # BOTTOM WINDOW CONTENTS
-            self.contents.extend([unit.name,
+            self.contents.extend([unit.name + " - " + unit.faction.name[0].upper() + unit.faction.name[1:],
                                   "Health:  " + str(unit.stats['health']),
                                   "Energy:  " + str(unit.stats['energy']),
                                   "AP:  " + str(unit.stats['ap']) + "/" + str(unit.stats['max ap']),
@@ -306,17 +314,33 @@ class BottomWindow(Window):
                                   "M.Resist: " + str(unit.stats['resist'])
                                   ])
         
+class InventoryWindow(Window):
+    def __init__(self, name, rect, color, visible, font):
+        Window.__init__(self, name, rect, color, visible, font)
         
-        
+    def update_contents(self):
+        self.contents = ["Equipped Items:"]
+        if data.selected_square.unit:     
+            for item in data.selected_square.unit.equipped:
+                line = item.name + "    "
+                for k, v in item.stats.items():
+                    if k == 'str': k = 'strength'
+                    if k == 'int': k = 'intellect'
+                    if k == 'agi': l = 'agility'
+                    if v >= 0: posneg = "+"
+                    if v <0 : posneg = ""
+                    line += k[0].upper() + k[1:] + ": " + posneg + str(v) + "  "
+                self.contents.append(line)
+            
 class Menu(Window):
     def __init__(self, name, rect, color, visible, font):
         Window.__init__(self, name, rect, color, visible, font)
     
     def update_contents(self): # MENU1 CONTENTS
-        self.menu1.contents.extend(["F1 - exit this menu",
+        self.contents = ["F1 - exit this menu",
                             "1 - 1024x768",
                             "2 - 1280x800"
-                            ])
+                            ]
                            
 def toggle_boolvar(var):
     if var: var = False

@@ -3,9 +3,26 @@ from gameboard import board
 from engine_class import data
 import random
 import items
-class Unit(object):
-    def __init__(self, name="No Name", square = (4,4), stats = {}):
+
+class Faction(object):
+    def __init__(self, name = "Derp"):
         self.name = name
+       
+    def __str__(self):
+        return self.name
+    
+friend = Faction('Friend')
+enemy = Faction('Enemy')
+friend.hostiles = [enemy]
+enemy.hostiles = [friend]
+data.factions.append(friend)
+data.factions.append(enemy)
+
+
+class Unit(object):
+    def __init__(self, name="No Name", faction = data.factions[0], square = (4,4), stats = {}):
+        self.name = name
+        self.faction = faction
         self.square = board.get_square(square)
         self.move_dest = None
         self.move_direction = [0, 0]
@@ -82,7 +99,11 @@ class Unit(object):
     
     def move_one_square(self,dest):
         if dest.unit != None:
-            self.attack(dest.unit)
+            if dest.unit.faction in self.faction.hostiles:
+                self.attack(dest.unit)
+            else:
+                print "cannot attack friendly unit."
+            
         elif dest.blocked:
             print "Square is blocked"
         elif self.stats['ap'] >= dest.ap_cost:
@@ -107,6 +128,7 @@ class Unit(object):
         damage = 0 + equipment_bonus - unit.stats['armor']
         unit.stats['health'] -= damage
         data.create_damage_result(self, unit, damage)
+        self.stats['ap'] = 0
         
     def initialize_stats(self):
         statlist = ['max_ap', 'armor', 'damage', 'strength', 'intellect', 'agility']
@@ -121,17 +143,18 @@ class Unit(object):
                 self.stats[k] += v
             
     def new_turn(self):
-        self.ap = self.max_ap
+        self.stats['ap'] = self.stats['max ap']
         
-def create_unit(name="No Name", square = (0,0),stats = {}):
-    unit = Unit(name, square, stats)
+def create_unit(name="No Name", faction = data.factions[0], square = (0,0),stats = {}):
+    unit = Unit(name, faction, square, stats)
     if name != "DUMMY":
         unitlist.append(unit)
         board.get_square(square).unit = unit
         
-def create_random_unit():
+def create_random_unit(faction = random.choice(data.factions)):
     global random_unit_number
     random_unit_number += 1
+    faction = random.choice(data.factions)
     name = "Random " + str(random_unit_number)
     open_squares = board.get_unblocked_squares()
     for square in open_squares:
@@ -152,10 +175,11 @@ def create_random_unit():
     stats["deflect"] = 10
     stats["resist"] = 0
     stats["status"] = []
-    create_unit(name, square, stats)
+    create_unit(name, faction, square, stats)
 
 unitlist = []
 random_unit_number = 0
 for i in range(10):
-    create_random_unit()
+    fac = random.choice(data.factions)
+    create_random_unit(fac)
 
