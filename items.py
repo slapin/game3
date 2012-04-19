@@ -54,6 +54,24 @@ weaponlist = [
               Item("weapon4", clothes.weapons[3], price = 5, damage = 5),
               Item("weapon5", clothes.weapons[4], price = 5, damage = 6),
               Item("weapon6", clothes.weapons[5], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[6], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[7], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[8], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[9], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[10], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[11], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[12], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[13], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[14], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[15], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[16], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[17], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[18], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[19], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[20], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[21], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[22], price = 5, damage = 7),
+              Item("weapon6", clothes.weapons[23], price = 5, damage = 7)
               ]
 
 itemlist = robelist

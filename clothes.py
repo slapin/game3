@@ -19,7 +19,7 @@ for i in range(29): # second row of robes
 
 weapons = []
 base = (-256, -224)
-for i in range(6):
+for i in range(24):
     offset = (-16, 0)
     x = base[0] - i * 16
     y = base[1]

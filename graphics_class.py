@@ -87,6 +87,9 @@ class Graphics(object):
                 else:
                     color = BLUE
                 rect = unit.square.get_rect()
+                if unit.move_offset:
+                    rect.left += unit.move_offset[0]
+                    rect.top += unit.move_offset[1]
                 pygame.draw.rect(self.display, color, rect, 2)
         
     def draw_turn_number(self):
